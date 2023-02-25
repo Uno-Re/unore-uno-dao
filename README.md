@@ -21,8 +21,13 @@ waiting for result...
  => contract VotingEscrow is now verified
 
 
+###### Updated version
 
-
-
+already verified: MockUno (0xb0b4d24A1528a6bf9fCFea57df679a3f29980806), skipping.
+already verified: Ownership (0x164fA135fd602493a6216cB12536fF65A101Be0f), skipping.
+already verified: SmartWalletChecker (0xbD9A1d5f46634E128aF419ED3FA4d0b37FD7268A), skipping.
+verifying VotingEscrow (0xE1B48626fCf2840f2a5a78E93B7f7f3952E3913b) ...
+waiting for result...
+ => contract VotingEscrow is now verified
 
 

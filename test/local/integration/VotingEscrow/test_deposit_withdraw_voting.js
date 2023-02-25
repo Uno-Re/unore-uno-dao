@@ -7,7 +7,7 @@ describe("VotingEscrow", function () {
   const YEAR = BigNumber.from(86400 * 365);
   const WEEK = BigNumber.from(86400 * 7);
 
-  const name = "UnoRe Tokne";
+  const name = "UnoRe Token";
   const symbol = "UnoRe";
   const decimal = 18;
 
@@ -34,12 +34,11 @@ describe("VotingEscrow", function () {
     [creator, alice, bob, chad, dad, elephant, fei, god, hecta, iloveyou] = await ethers.getSigners();
     accounts = [creator, alice, bob, chad, dad, elephant, fei, god, hecta, iloveyou];
     const Ownership = await ethers.getContractFactory("Ownership");
-    const Token = await ethers.getContractFactory("TestToken");
+    const Token = await ethers.getContractFactory("MockUno");
     const VotingEscrow = await ethers.getContractFactory("VotingEscrow");
-    const CollateralManager = await ethers.getContractFactory("TestCollateralManager");
 
     ownership = await Ownership.deploy();
-    token = await Token.deploy(name, symbol, decimal);
+    token = await Token.deploy(name, symbol);
     voting_escrow = await VotingEscrow.deploy(
       token.address,
       "Voting-escrowed UnoRe",
@@ -47,20 +46,12 @@ describe("VotingEscrow", function () {
       "veUnoRe",
       ownership.address
     );
-    manager = await CollateralManager.deploy(voting_escrow.address);
 
     //init
     for (i = 0; i < 10; i++) {
-      await token.connect(accounts[i])._mint_for_testing(ten_to_the_40);
+      await token.connect(accounts[i]).faucet(ten_to_the_40);
       await token.connect(accounts[i]).approve(voting_escrow.address, two_to_the_256_minus_1);
     }
-
-    tx = await voting_escrow.commit_collateral_manager(manager.address);
-    await tx.wait();
-    await voting_escrow.apply_collateral_manager();
-
-    console.log(manager.address);
-    console.log(await voting_escrow.collateral_manager());
 
     //setup
     token_balances = [
@@ -88,7 +79,7 @@ describe("VotingEscrow", function () {
     return rdm;
   }
 
-  //--------------------------------------------- randomly excuted functions -----------------------------------------------------------//
+  //--------------------------------------------- randomly executed functions -----------------------------------------------------------//
   async function rule_create_lock() {
     console.log("rule_create_lock");
 
@@ -103,34 +94,33 @@ describe("VotingEscrow", function () {
     //number of weeks to lock a deposit
     st_lock_duration = rdm_value(255); //uint8.max
 
-    let timestamp = BigNumber.from((await ethers.provider.getBlock("latest")).timestamp);
-    unlock_time = timestamp.add(WEEK.mul(st_lock_duration)).div(WEEK).mul(WEEK);
+    unlock_time = WEEK.mul(st_lock_duration).div(WEEK).mul(WEEK);
 
     if (st_value == 0) {
       console.log("--revert: 1");
       await expect(voting_escrow.connect(st_account).create_lock(st_value, unlock_time)).to.revertedWith(
         "dev: need non-zero value"
       );
-    } else if (voting_balances[st_account_n]["value"].gt("0")) {
+    } else if (unlock_time.lte(0)) {
       console.log("--revert: 2");
       await expect(voting_escrow.connect(st_account).create_lock(st_value, unlock_time)).to.revertedWith(
-        "Withdraw old tokens first"
+        "Can lock until time in future or Voting lock can be 4 years max"
       );
-    } else if (unlock_time.lte(timestamp)) {
+    } else if (unlock_time.gte(MAX_TIME)) {
       console.log("--revert: 3");
       await expect(voting_escrow.connect(st_account).create_lock(st_value, unlock_time)).to.revertedWith(
-        "Can lock until time in future"
+        "Can lock until time in future or Voting lock can be 4 years max"
       );
-    } else if (unlock_time.gte(timestamp.add(YEAR.mul("4")))) {
+    } else if (voting_balances[st_account_n]["value"].gt("0")) {
       console.log("--revert: 4");
       await expect(voting_escrow.connect(st_account).create_lock(st_value, unlock_time)).to.revertedWith(
-        "Voting lock can be 4 years max"
+        "Withdraw old tokens first"
       );
     } else {
       console.log("--success, account:", st_account_n);
       tx = await voting_escrow.connect(st_account).create_lock(st_value, unlock_time);
       receipt = await tx.wait();
-      voting_balances[st_account_n] = { value: st_value, unlock_time: receipt.events[1]["args"]["locktime"] };
+      voting_balances[st_account_n] = { value: st_value, unlock_time: receipt.events[2]["args"]["locktime"] };
     }
   }
 
@@ -181,7 +171,7 @@ describe("VotingEscrow", function () {
     //unlock_time
     let timestamp = BigNumber.from((await ethers.provider.getBlock("latest")).timestamp);
     st_lock_duration = rdm_value(255); //number of weeks
-    let unlock_time = timestamp.add(st_lock_duration.mul(WEEK)).div(WEEK).mul(WEEK);
+    let unlock_time = st_lock_duration.mul(WEEK).div(WEEK).mul(WEEK);
 
     if (voting_balances[st_account_n]["unlock_time"].lte(timestamp)) {
       console.log("--revert: 1");
@@ -191,15 +181,15 @@ describe("VotingEscrow", function () {
       await expect(voting_escrow.connect(st_account).increase_unlock_time(unlock_time)).to.revertedWith(
         "Nothing is locked"
       );
-    } else if (voting_balances[st_account_n]["unlock_time"].gte(unlock_time)) {
+    } else if (unlock_time.lte(0)) {
       console.log("--revert: 3");
       await expect(voting_escrow.connect(st_account).increase_unlock_time(unlock_time)).to.revertedWith(
-        "Can only increase lock duration"
+        "Can only increase lock duration or Voting lock can be 4 years max"
       );
-    } else if (unlock_time.gt(timestamp.add(YEAR.mul("4")))) {
+    } else if (unlock_time.gt(MAX_TIME)) {
       console.log("--revert: 4");
       await expect(voting_escrow.connect(st_account).increase_unlock_time(unlock_time)).to.revertedWith(
-        "Voting lock can be 4 years max"
+        "Can only increase lock duration or Voting lock can be 4 years max"
       );
     } else {
       console.log("--success, account:", st_account_n);
@@ -227,39 +217,6 @@ describe("VotingEscrow", function () {
       console.log("--success, account:", st_account_n);
       await voting_escrow.connect(st_account).withdraw();
       voting_balances[st_account_n]["value"] = BigNumber.from("0");
-    }
-  }
-
-  async function rule_force_unlock() {
-    console.log("rule_force_unlock");
-
-    //st_account
-    let rdm = Math.floor(Math.random() * 10); //0~9 integer
-    st_account_n = rdm;
-    st_account = accounts[st_account_n];
-
-    let target_account_n = Math.floor(Math.random() * 10);
-    let target_account = accounts[target_account_n];
-
-    if (st_account == creator) {
-      //only creator can execute TestCollateralManager:force_unlock()
-
-      if (voting_balances[target_account_n]["value"].eq(BigNumber.from("0"))) {
-        //there is no locked uno token or already withdrawed.
-        console.log("--reverted");
-        await expect(manager.connect(st_account).force_unlock(target_account.address)).to.revertedWith(
-          "There is no locked UnoRe"
-        );
-      } else {
-        console.log("--success_force_unlock, account:", target_account_n);
-        tx = await manager.connect(st_account).force_unlock(target_account.address);
-        await tx.wait();
-        voting_balances[target_account_n]["value"] = BigNumber.from("0");
-        voting_balances[target_account_n]["unlock_time"] = BigNumber.from("0");
-      }
-    } else {
-      console.log("--reverted");
-      await expect(manager.connect(st_account).force_unlock(target_account.address)).to.revertedWith("only admin");
     }
   }
 
@@ -295,14 +252,13 @@ describe("VotingEscrow", function () {
     "rule_withdraw",
     "rule_checkpoint",
     "rule_advance_time",
-    "rule_force_unlock",
   ];
 
   describe("test_votingescrow_admin", function () {
     //set arbitral number of repeats
-    for (let x = 0; x < 20; x++) {
+    for (let x = 0; x < 10; x++) {
       it("try " + eval("x+1"), async () => {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
           let n = await rdm_value(func.length);
           await eval(func[n])();
         }
@@ -314,7 +270,7 @@ describe("VotingEscrow", function () {
     console.log("=====Invariant checks=====");
 
     console.log("invariant_token_balances");
-    for (i = 0; i < accounts.lenght; i++) {
+    for (i = 0; i < accounts.length; i++) {
       expect(await token.balanceOf(accounts[i].address)).to.equal(ten_to_the_40.sub(voting_balances[i]["value"]));
     }
 

@@ -448,7 +448,7 @@ contract VotingEscrow is ReentrancyGuard {
         assert_not_contract(msg.sender);
         require(
             _unlock_time > 0 && _unlock_time <= MAXTIME,
-            "Voting lock can be 4 years max"
+            "Can lock until time in future or Voting lock can be 4 years max"
         );
         _unlock_time = block.timestamp + (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
         LockedBalance memory _locked = locked[msg.sender];
@@ -496,17 +496,17 @@ contract VotingEscrow is ReentrancyGuard {
     function increase_unlock_time(uint256 _unlock_time) external nonReentrant {
         assert_not_contract(msg.sender); //@shun: need to convert to solidity
         LockedBalance memory _locked = locked[msg.sender];
+
+        require(_locked.end > block.timestamp, "Lock expired");
+        require(_locked.amount > 0, "Nothing is locked");
+
         require(
-            _unlock_time <= MAXTIME,
-            "Voting lock can be 4 years max"
+            _unlock_time > 0 && _unlock_time <= MAXTIME,
+            "Can only increase lock duration or Voting lock can be 4 years max"
         );
         unchecked {
             _unlock_time = block.timestamp + (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
         }
-
-        require(_locked.end > block.timestamp, "Lock expired");
-        require(_locked.amount > 0, "Nothing is locked");
-        require(_unlock_time > _locked.end, "Can only increase lock duration");
 
         _deposit_for(
             msg.sender,
