@@ -56,30 +56,12 @@ module.exports = {
       live: false,
       saveDeployments: true
     },
-    rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_KEY}`,
+    goerli: {
+      url: "https://goerli.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef",
+      // url: "https://rpc.ankr.com/eth_goerli",
+      chainId: 5,
       accounts,
-      chainId: 4,
-      live: false,
-      saveDeployments: true,
-      tags: ["staging"],
-      gasPrice: "auto",
-      gasMultiplier: 2,
-    },
-    bscTest: {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
-      chainId: 97,
-      accounts: {mnemonic: process.env.MNEMONIC},
-      live: true,
-      saveDeployments: true,
-      gasMultiplier: 2,
-    },
-    bscMain: {
-      url: "https://bsc-dataseed.binance.org/",
-      chainId: 56,
-      accounts: {mnemonic: process.env.MNEMONIC},
-      live: true,
-      saveDeployments: true
+      gasPrice: 360000000000
     }
   },
   etherscan: {
