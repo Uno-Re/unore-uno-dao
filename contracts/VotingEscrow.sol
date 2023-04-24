@@ -475,7 +475,7 @@ contract VotingEscrow is ReentrancyGuard {
         assert_not_contract(msg.sender);
         LockedBalance memory _locked = locked[msg.sender];
 
-        require(_value > 0);
+        require(_value > 0, "dev: need non-zero value");
         require(_locked.amount > 0, "No existing lock found");
         require(_locked.end > block.timestamp, "Cannot add to expired lock.");
 

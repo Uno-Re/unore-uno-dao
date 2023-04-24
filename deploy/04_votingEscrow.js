@@ -4,26 +4,18 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    // address _token_addr,
-    //     string memory _name,
-    //     string memory _symbol,
-    //     string memory _version,
-    //     address _ownership
-  
-    this.mockUno = await deployments.get('MockUno');
-    const mockUnoAddress = this.mockUno.address;
-    const _name = 'UnoDao Voting';
-    const _symbol = 'UnoDaoVE';
+    const unoAddress = "0x474021845c4643113458ea4414bdb7fb74a01a77";
+    const _name = 'Vote-Escrowed UNO';
+    const _symbol = 'veUNO';
     const _version = '1';
 
-    this.ownership = await deployments.get('MockUno');
-    const ownershipAddress = this.ownership.address;
+    const ownershipAddress = '0x311520b1B66fc271c95aD8C36C0A3391Cd764C67';
   
     await deploy('VotingEscrow', {
       from: deployer,
       log: true,
       args: [
-        mockUnoAddress,
+        unoAddress,
         _name,
         _symbol,
         _version,
@@ -33,6 +25,5 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     });
   };
   
-  module.exports.tags = ['VotingEscrow', 'UnoDao'];
-  module.exports.dependencies = ['MockUno', 'MockUno'];
+  module.exports.tags = ['Vote-Escrowed UNO', 'UnoDao'];
   

@@ -50,7 +50,7 @@ module.exports = {
       accounts
     },
     mainnet: {
-      url: `https://mainnet.infura.io/v3/${process.env.INFURA_KEY}`,
+      url: 'https://eth-mainnet.g.alchemy.com/v2/wqW5o0YSPkc421ISSwz8NqdG3fvdFVx6',
       accounts,
       chainId: 1,
       live: false,

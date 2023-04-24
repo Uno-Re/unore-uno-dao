@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.10;
 
-contract SmartWalletChecker {
+contract SmartWalletCheckerMock {
     function check(address) external view returns (bool) {
         return true;
     }
