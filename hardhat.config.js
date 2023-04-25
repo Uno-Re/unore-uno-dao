@@ -60,8 +60,7 @@ module.exports = {
       url: "https://goerli.infura.io/v3/9f79b2f9274344af90b8d4e244b580ef",
       // url: "https://rpc.ankr.com/eth_goerli",
       chainId: 5,
-      accounts,
-      gasPrice: 360000000000
+      accounts
     }
   },
   etherscan: {
