@@ -352,8 +352,8 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint256 reward, uint256 yieldRate);
-    event OldYieldCollected(address indexed user, uint256 yield, address token_address);
-    event YieldCollected(address indexed user, uint256 yield, address token_address);
+    event OldYieldCollected(address indexed user, uint256 yieldAmount, address token_address);
+    event YieldCollected(address indexed user, uint256 yieldAmount, address token_address);
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
     event YieldPeriodRenewed(address token, uint256 yieldRate);

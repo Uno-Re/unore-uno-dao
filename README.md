@@ -32,16 +32,11 @@ waiting for result...
 
 
 ### deployments on goerli
-MockUno 0x165dc2f44f001e5b9F162882664cC46FD2AfE538
-Ownership 0x989A3277430b07783F1293641bfFA2C6b6EB7A96
-SmartWalletChecker 0xa7D01d66C190dc9E4d9DeA55c9BF823E290359df
-VotingEscrow 0xB5a408Bf8b2A637e11C39602d7fd1F6F7d7F07d3
-
-deploying "Ownership" (tx: )...: deployed at 0xa2169cAA1597fd2dB810dAE670A5DFa3FaBe295A with 207625 gas
-deploying "MockUno" (tx: )...: deployed at 0x3a554dc1EAc143FC4640b0294A342B4F9089FDE6 with 813769 gas
-deploying "SmartWalletChecker" (tx: )...: deployed at 0x042e43282EaE5eC87673A2Cb7aFFbBe752833409 with 92537 gas
-deploying "VotingEscrow" (tx: )...: deployed at 0xE55A92fa510e2d277E4cF947189D0523683D63EC with 2468362 gas
-deploying "VeUnoDaoYieldDistributor" (tx: )...: deployed at 0x0093a5cD02454593045650F83FfC150aDD1C7bdb with 1768831 gas
+ Ownership: 0xa2169cAA1597fd2dB810dAE670A5DFa3FaBe295A
+ MockUno: 0x3a554dc1EAc143FC4640b0294A342B4F9089FDE6
+ SmartWalletChecker: 0x042e43282EaE5eC87673A2Cb7aFFbBe752833409
+ VotingEscrow: 0xE55A92fa510e2d277E4cF947189D0523683D63EC
+ VeUnoDaoYieldDistributor: 0xFE77760384bE8bAa3d86B352496055CD867ad204
 
 ### deployment on mainnet
 Ownership: 0x311520b1B66fc271c95aD8C36C0A3391Cd764C67
