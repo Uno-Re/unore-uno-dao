@@ -23,9 +23,9 @@ waiting for result...
 
 ###### Updated version
 
-already verified: MockUno 0xb0b4d24A1528a6bf9fCFea57df679a3f29980806), skipping.
-already verified: Ownership 0x164fA135fd602493a6216cB12536fF65A101Be0f), skipping.
-already verified: SmartWalletChecker 0xbD9A1d5f46634E128aF419ED3FA4d0b37FD7268A), skipping.
+already verified: MockUno 0xb0b4d24A1528a6bf9fCFea57df679a3f29980806, skipping.
+already verified: Ownership 0x164fA135fd602493a6216cB12536fF65A101Be0f, skipping.
+already verified: SmartWalletChecker 0xbD9A1d5f46634E128aF419ED3FA4d0b37FD7268A, skipping.
 VotingEscrow 0xE1B48626fCf2840f2a5a78E93B7f7f3952E3913b
 waiting for result...
  => contract VotingEscrow is now verified
@@ -42,3 +42,4 @@ waiting for result...
 Ownership: 0x311520b1B66fc271c95aD8C36C0A3391Cd764C67
 SmartWalletChecker: 0xfB31c911329A89F04FB739d5659043e49762bB5D
 VotingEscrow: 0xBdBC1af93D95909625b18775b14c7D21E00775Aa
+VeUnoDistributor: 0x50A7C5A1a143E7Ada93b6F69027Fe329869A75f1
