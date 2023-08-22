@@ -15,4 +15,10 @@ contract NotifyRewardProxy is AccessControl {
 
     IVeUnoDaoYieldDistributor public yieldDistributor;
     IERC20 public uno;
+
+    constructor(IVeUnoDaoYieldDistributor _yieldDistributor, IERC20 _uno, address _admin) {
+        yieldDistributor = _yieldDistributor;
+        uno = _uno;
+        _grantRole(DEFAULT_ADMIN_ROLE, _admin);
+    }
 }
