@@ -21,4 +21,10 @@ contract NotifyRewardProxy is AccessControl {
         uno = _uno;
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
     }
+
+    function execNotifyReward(address _user, uint256 _amount) external onlyRole(EXECUTOR_ROLE) {
+        uno.safeTransferFrom(_user, address(this), _amount);
+        uno.approve(address(yieldDistributor), _amount);
+        yieldDistributor.notifyRewardAmount(_amount);
+    }
 }
