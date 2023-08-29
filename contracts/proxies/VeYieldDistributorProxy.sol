@@ -15,15 +15,17 @@ contract NotifyRewardProxy is AccessControl {
     event NotifyRewardExecuted(address indexed user, uint256 amount);
 
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
+    uint256 public constant APY_BASE = 10000; // APY should be provided as per this base to get ratio
 
     IVeUnoDaoYieldDistributor public yieldDistributor;
     IERC20 public uno;
-    IERC20 public veUNO;
+    IERC20 public veUno;
     uint256 public apy;
 
-    constructor(IVeUnoDaoYieldDistributor _yieldDistributor, IERC20 _uno, address _admin) {
+    constructor(IVeUnoDaoYieldDistributor _yieldDistributor, IERC20 _uno, IERC20 _veUno, address _admin) {
         yieldDistributor = _yieldDistributor;
         uno = _uno;
+        veUno = _veUno;
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
     }
 
@@ -33,11 +35,17 @@ contract NotifyRewardProxy is AccessControl {
     }
 
     function execNotifyReward(address _user) external onlyRole(EXECUTOR_ROLE) {
-        uint256 amount = yieldDistributor.getYieldForDuration();
+        uint256 amount = getRewardAmount();
         uno.safeTransferFrom(_user, address(this), amount);
         uno.approve(address(yieldDistributor), amount);
         yieldDistributor.notifyRewardAmount(amount);
 
         emit NotifyRewardExecuted(_user, amount);
+    }
+
+    function getRewardAmount() public view returns (uint256 reward) {
+        uint256 veTotalSupply = veUno.totalSupply();
+        uint256 duration = yieldDistributor.yieldDuration();
+        reward = veTotalSupply * (apy / APY_BASE) * (duration / 365); // days in year = 365
     }
 }
