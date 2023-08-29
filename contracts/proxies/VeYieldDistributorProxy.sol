@@ -15,7 +15,8 @@ contract NotifyRewardProxy is AccessControl {
     event NotifyRewardExecuted(address indexed user, uint256 amount);
 
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
-    uint256 public constant APY_BASE = 10000; // APY should be provided as per this base to get ratio
+    uint256 public constant APY_BASE = 10000; // APY should be provided as per this base to get ratio, 60% should 6000
+    uint256 public constant SECONDS_IN_YEAR = 31536000;
 
     IVeUnoDaoYieldDistributor public yieldDistributor;
     IERC20 public uno;
@@ -46,6 +47,6 @@ contract NotifyRewardProxy is AccessControl {
     function getRewardAmount() public view returns (uint256 reward) {
         uint256 veTotalSupply = veUno.totalSupply();
         uint256 duration = yieldDistributor.yieldDuration();
-        reward = veTotalSupply * (apy / APY_BASE) * (duration / 365); // days in year = 365
+        reward = (veTotalSupply * apy * duration) / (APY_BASE * SECONDS_IN_YEAR);
     }
 }
