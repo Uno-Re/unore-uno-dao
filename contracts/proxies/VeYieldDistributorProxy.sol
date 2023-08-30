@@ -31,6 +31,7 @@ contract NotifyRewardProxy is AccessControl {
     }
 
     function updateApy(uint256 _apy) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(_apy <= APY_BASE, "NotifyRewardProxy: invalid APY");
         apy = _apy;
         emit ApyUpdated(_apy);
     }
