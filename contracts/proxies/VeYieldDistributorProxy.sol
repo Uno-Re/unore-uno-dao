@@ -18,9 +18,9 @@ contract NotifyRewardProxy is AccessControl {
     uint256 public constant APY_BASE = 10000; // APY should be provided as per this base to get ratio, 60% should 6000
     uint256 public constant SECONDS_IN_YEAR = 31536000;
 
-    IVeUnoDaoYieldDistributor public yieldDistributor;
-    IERC20 public uno;
-    IERC20 public veUno;
+    IVeUnoDaoYieldDistributor public immutable yieldDistributor;
+    IERC20 public immutable uno;
+    IERC20 public immutable veUno;
     uint256 public apy;
 
     constructor(IVeUnoDaoYieldDistributor _yieldDistributor, IERC20 _uno, IERC20 _veUno, address _admin) {
