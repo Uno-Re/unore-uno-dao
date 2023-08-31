@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { BigNumber } = ethers;
 
-describe("VeUnoDaoYieldDistributor", function() {
+describe("VeYieldDistributorProxy", function() {
   const YEAR = BigNumber.from(86400 * 365);
   const WEEK = BigNumber.from(86400 * 7);
 
@@ -73,41 +73,47 @@ describe("VeUnoDaoYieldDistributor", function() {
     );
   });
 
-  it("veToken distributor flow", async function() {
-    let aliceUNOBalance = await this.token.balanceOf(this.alice.address);
-    console.log('aliceUnoBalance ==>', aliceUNOBalance.toString());
+  describe("NotifyRewardProxy", function () {
+    it("Should transfer reward amount to VeUnoDaoYieldDistributor", async function () {
+      await this.notifyRewardProxy.updateApy(6000);
+      const EXECUTOR_ROLE = await this.notifyRewardProxy.EXECUTOR_ROLE();
+      await this.notifyRewardProxy.grantRole(EXECUTOR_ROLE,this.creator.address);
+      await this.veUnoDaoYieldDistributor.toggleRewardNotifier(this.notifyRewardProxy.address);
 
-    await this.voting_escrow.connect(this.alice).create_lock(this.escrowedAmount, MAX_TIME);
-    let veBalance = await this.voting_escrow["balanceOf(address)"](this.alice.address);
-    console.log("Account veToken balance ==>", veBalance.toString());
+      let amount = await this.notifyRewardProxy.getRewardAmount();
+      await this.token.approve(this.notifyRewardProxy.address, amount);
+      let balaceBefore = await this.token.balanceOf(this.veUnoDaoYieldDistributor.address);
 
-    // await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
-    aliceUNOBalance = await this.token.balanceOf(this.alice.address);
-    console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
+      const tx = await this.notifyRewardProxy.execNotifyReward(this.creator.address);
+      const blockNum = await ethers.provider.getBlockNumber();
+      const block = await ethers.provider.getBlock(blockNum);
+      const expectedCurrentTimestamp = block.timestamp;
+      let balaceAfter = await this.token.balanceOf(this.veUnoDaoYieldDistributor.address);
+      await expect(tx).to.emit(this.notifyRewardProxy, "NotifyRewardExecuted").withArgs(this.creator.address, amount);
 
-    // increase block time 4 weeks
-    await ethers.provider.send("evm_increaseTime", [
-      WEEK.mul(4).toNumber(),
-    ]);
-    await ethers.provider.send("evm_mine");
+      expect(await this.veUnoDaoYieldDistributor.lastUpdateTime()).to.equal(BigNumber.from(expectedCurrentTimestamp));
 
-    // after 4 weeks
-    veBalance = await this.voting_escrow["balanceOf(address)"](this.alice.address);
-    console.log("Account veToken balance ==>", veBalance.toString());
+      let yieldDuration = await this.veUnoDaoYieldDistributor.yieldDuration();
+      let expectedPeriodFinish = BigNumber.from(expectedCurrentTimestamp).add(yieldDuration);
+      expect(await this.veUnoDaoYieldDistributor.periodFinish()).to.equal(expectedPeriodFinish);
+      expect(balaceAfter).to.equal(balaceBefore.add(BigNumber.from(amount)));
+    });
 
-    console.log("\n\n=== Checkpoint ===\n");
-    await this.veUnoDaoYieldDistributor.connect(this.alice).checkpoint();
+    it("Should revert when caller has no executor role", async function () {
+      await this.notifyRewardProxy.updateApy(6000);
+      const EXECUTOR_ROLE = await this.notifyRewardProxy.EXECUTOR_ROLE();
+      await expect(this.notifyRewardProxy.execNotifyReward(this.creator.address)).to.be.revertedWith(
+        `AccessControl: account ${this.creator.address.toLowerCase()} is missing role ${EXECUTOR_ROLE}`
+      );
+    });
 
-    console.log("\n\n=== First getting yield ===\n");
-    await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
-    aliceUNOBalance = await this.token.balanceOf(this.alice.address);
-    console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
-    // let userLocked = await this.voting_escrow.locked(this.alice.address);
-    // console.log('userLocked ==>', userLocked.amount.toString());
-
-    // console.log("\n\n=== Second getting yield ===\n");
-    // await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
-    // aliceUNOBalance = await this.token.balanceOf(this.alice.address);
-    // console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
+    it("Should revert when notifyRewardProxy is not whitelisted in veUnoDaoYieldDistributor", async function () {
+      await this.notifyRewardProxy.updateApy(6000);
+      let amount = await this.notifyRewardProxy.getRewardAmount();
+      await this.token.approve(this.notifyRewardProxy.address, amount);
+      const EXECUTOR_ROLE = await this.notifyRewardProxy.EXECUTOR_ROLE();
+      await this.notifyRewardProxy.grantRole(EXECUTOR_ROLE,this.creator.address);
+      await expect(this.notifyRewardProxy.execNotifyReward(this.creator.address)).to.be.revertedWith("Sender not whitelisted");
+    });
   });
 });
