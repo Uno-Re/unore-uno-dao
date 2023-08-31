@@ -30,14 +30,12 @@ describe("VeUnoDaoYieldDistributor", function() {
     this.Token = await ethers.getContractFactory("MockUno");
     this.VotingEscrow = await ethers.getContractFactory("VotingEscrow");
     this.VeUnoDaoYieldDistributor = await ethers.getContractFactory("VeUnoDaoYieldDistributor");
-    this.MockVeUno = await ethers.getContractFactory("MockVeUno");
 
     this.ownership = await this.Ownership.deploy();
     this.token = await this.Token.deploy(name, symbol);
     this.voting_escrow = await this.VotingEscrow.deploy(
       this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address
     );
-    this.mockVeUno = await this.MockVeUno.deploy();
 
     this.veUnoDaoYieldDistributor = await this.VeUnoDaoYieldDistributor.deploy(
       this.token.address,
@@ -62,15 +60,6 @@ describe("VeUnoDaoYieldDistributor", function() {
 
     this.token.faucet(ten_to_the_40);
 
-    this.NotifyRewardProxy = await ethers.getContractFactory(
-      "NotifyRewardProxy"
-    );
-    this.notifyRewardProxy = await this.NotifyRewardProxy.deploy(
-      this.veUnoDaoYieldDistributor.address,
-      this.token.address,
-      this.mockVeUno.address,
-      this.creator.address
-    );
   });
 
   it("veToken distributor flow", async function() {
