@@ -30,25 +30,23 @@ describe("VeYieldDistributorProxy", function() {
     this.Token = await ethers.getContractFactory("MockUno");
     this.VotingEscrow = await ethers.getContractFactory("VotingEscrow");
     this.VeUnoDaoYieldDistributor = await ethers.getContractFactory("VeUnoDaoYieldDistributor");
-    this.MockVeUno = await ethers.getContractFactory("MockVeUno");
 
     this.ownership = await this.Ownership.deploy();
     this.token = await this.Token.deploy(name, symbol);
-    this.voting_escrow = await this.VotingEscrow.deploy(
+    this.votingEscrow = await this.VotingEscrow.deploy(
       this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address
     );
-    this.mockVeUno = await this.MockVeUno.deploy();
 
     this.veUnoDaoYieldDistributor = await this.VeUnoDaoYieldDistributor.deploy(
       this.token.address,
       this.creator.address,
-      this.voting_escrow.address
+      this.votingEscrow.address
     );
 
     //init
     for (i = 0; i < accounts.length; i++) {
       await this.token.connect(accounts[i]).faucet(ten_to_the_40);
-      await this.token.connect(accounts[i]).approve(this.voting_escrow.address, two_to_the_256_minus_1);
+      await this.token.connect(accounts[i]).approve(this.votingEscrow.address, two_to_the_256_minus_1);
     }
 
     this.rewardAmount = BigNumber.from(1000000).mul(BigNumber.from(10).pow(18)); // one million UNO for reward
@@ -68,7 +66,7 @@ describe("VeYieldDistributorProxy", function() {
     this.notifyRewardProxy = await this.NotifyRewardProxy.deploy(
       this.veUnoDaoYieldDistributor.address,
       this.token.address,
-      this.mockVeUno.address,
+      this.votingEscrow.address,
       this.creator.address
     );
   });
@@ -80,22 +78,24 @@ describe("VeYieldDistributorProxy", function() {
       await this.notifyRewardProxy.grantRole(EXECUTOR_ROLE,this.creator.address);
       await this.veUnoDaoYieldDistributor.toggleRewardNotifier(this.notifyRewardProxy.address);
 
-      let amount = await this.notifyRewardProxy.getRewardAmount();
-      await this.token.approve(this.notifyRewardProxy.address, amount);
+      await this.votingEscrow.create_lock(this.escrowedAmount, MAX_TIME);
+      await this.token.approve(this.notifyRewardProxy.address, ten_to_the_40);
       let balaceBefore = await this.token.balanceOf(this.veUnoDaoYieldDistributor.address);
-
+      
       const tx = await this.notifyRewardProxy.execNotifyReward(this.creator.address);
+      let amount = await this.notifyRewardProxy.getRewardAmount();
+      await expect(tx).to.emit(this.notifyRewardProxy, "NotifyRewardExecuted").withArgs(this.creator.address, amount);
+
       const blockNum = await ethers.provider.getBlockNumber();
       const block = await ethers.provider.getBlock(blockNum);
       const expectedCurrentTimestamp = block.timestamp;
-      let balaceAfter = await this.token.balanceOf(this.veUnoDaoYieldDistributor.address);
-      await expect(tx).to.emit(this.notifyRewardProxy, "NotifyRewardExecuted").withArgs(this.creator.address, amount);
-
       expect(await this.veUnoDaoYieldDistributor.lastUpdateTime()).to.equal(BigNumber.from(expectedCurrentTimestamp));
 
       let yieldDuration = await this.veUnoDaoYieldDistributor.yieldDuration();
       let expectedPeriodFinish = BigNumber.from(expectedCurrentTimestamp).add(yieldDuration);
       expect(await this.veUnoDaoYieldDistributor.periodFinish()).to.equal(expectedPeriodFinish);
+
+      let balaceAfter = await this.token.balanceOf(this.veUnoDaoYieldDistributor.address);
       expect(balaceAfter).to.equal(balaceBefore.add(BigNumber.from(amount)));
     });
 
