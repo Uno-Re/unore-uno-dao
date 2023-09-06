@@ -58,7 +58,7 @@ describe("VeUnoDaoYieldDistributor", function() {
     //setup
     this.escrowedAmount = BigNumber.from(1000).mul(BigNumber.from(10).pow(18));
 
-    this.token.faucet(ten_to_the_40);
+    this.token.faucet(ten_to_the_40)
 
   });
 
@@ -98,5 +98,5 @@ describe("VeUnoDaoYieldDistributor", function() {
     // await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
     // aliceUNOBalance = await this.token.balanceOf(this.alice.address);
     // console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
-  });
-});
+  })
+})
