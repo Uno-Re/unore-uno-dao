@@ -38,11 +38,10 @@ contract NotifyRewardProxy is AccessControl {
 
     function execNotifyReward(address _user) external onlyRole(EXECUTOR_ROLE) {
         uint256 amount = getRewardAmount();
-        if (amount != 0) {
-            uno.safeTransferFrom(_user, address(this), amount);
-            uno.approve(address(yieldDistributor), amount);
-            yieldDistributor.notifyRewardAmount(amount);
-        }
+        require(amount != 0, "NotifyRewardProxy: zero reward");
+        uno.safeTransferFrom(_user, address(this), amount);
+        uno.approve(address(yieldDistributor), amount);
+        yieldDistributor.notifyRewardAmount(amount);
         emit NotifyRewardExecuted(_user, amount);
     }
 
