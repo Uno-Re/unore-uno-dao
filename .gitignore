@@ -12,4 +12,3 @@ coverage.json
 .env
 .idea/
 .yarn-lock
-scripts

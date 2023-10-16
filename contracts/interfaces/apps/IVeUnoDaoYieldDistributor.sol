@@ -6,4 +6,8 @@ interface IVeUnoDaoYieldDistributor {
     function notifyRewardAmount(uint256 amount) external;
 
     function yieldDuration() external view returns (uint256);
+
+    function periodFinish() external view returns (uint256);
+
+    function yieldRate() external view returns (uint256);
 }

@@ -51,7 +51,7 @@ module.exports = {
     },
     mainnet: {
       url: 'https://eth-mainnet.g.alchemy.com/v2/wqW5o0YSPkc421ISSwz8NqdG3fvdFVx6',
-      accounts,
+      accounts: [`${process.env.MAINNET_PRIVATE_KEY}`],
       chainId: 1,
       live: false,
       saveDeployments: true

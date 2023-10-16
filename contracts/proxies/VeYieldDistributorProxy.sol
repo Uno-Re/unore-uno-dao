@@ -45,9 +45,24 @@ contract NotifyRewardProxy is AccessControl {
         emit NotifyRewardExecuted(_user, amount);
     }
 
-    function getRewardAmount() public view returns (uint256 reward) {
+    function getRewardAmount() public view returns (uint256) {
         uint256 veTotalSupply = veUno.totalSupply();
         uint256 duration = yieldDistributor.yieldDuration();
-        reward = (veTotalSupply * apy * duration) / (APY_BASE * SECONDS_IN_YEAR);
+        uint256 reward = (veTotalSupply * apy * duration) / (APY_BASE * SECONDS_IN_YEAR);
+
+        uint256 periodFinish = yieldDistributor.periodFinish();
+        if (periodFinish > block.timestamp) {
+            periodFinish -= block.timestamp;
+            uint256 yieldRate = yieldDistributor.yieldRate();
+            uint256 leftover = periodFinish * yieldRate;
+
+            if (leftover > reward) {
+                return 0;
+            }
+
+            reward -= leftover;
+        }
+
+        return reward;
     }
 }
