@@ -5,13 +5,13 @@ pragma solidity =0.8.23;
 // https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {Ownable2Step} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {Owned} from "../access/Owned.sol";
 import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
-contract VeUnoDaoYieldDistributor is Ownable2Step, ReentrancyGuard {
+contract VeUnoDaoYieldDistributor is Owned, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     struct LockedBalance {
@@ -63,7 +63,7 @@ contract VeUnoDaoYieldDistributor is Ownable2Step, ReentrancyGuard {
 
     modifier onlyByOwnGov() {
         require(
-            msg.sender == owner() || msg.sender == timelock,
+            msg.sender == owner || msg.sender == timelock,
             "VeUnoYD: !O/T"
         );
         _;
@@ -79,13 +79,12 @@ contract VeUnoDaoYieldDistributor is Ownable2Step, ReentrancyGuard {
         _;
     }
 
-    constructor(IERC20 _emittedToken, IVotingEscrow _veUNO, address _owner, address _timelock) {
+    constructor(IERC20 _emittedToken, IVotingEscrow _veUNO, address _owner, address _timelock) Owned(_owner) {
         emittedToken = _emittedToken;
         veUNO = _veUNO;
         timelock = _timelock;
         lastUpdateTime = block.timestamp;
         rewardNotifiers[msg.sender] = true;
-        _transferOwnership(_owner);
     }
 
     function sync() public {
@@ -306,7 +305,7 @@ contract VeUnoDaoYieldDistributor is Ownable2Step, ReentrancyGuard {
         uint256 _amount
     ) external onlyByOwnGov {
         // Only the owner address can receive the recovery withdrawal
-        _token.safeTransfer(owner(), _amount);
+        _token.safeTransfer(owner, _amount);
         emit RecoveredERC20(address(_token), _amount);
     }
 
