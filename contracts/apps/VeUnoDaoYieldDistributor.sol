@@ -338,22 +338,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         }
     }
 
-    function setPeriodFinish(
-        uint256 _newPeriod,
-        bool _isSync
-    ) external onlyByOwnGov {
-        periodFinish = _newPeriod;
-
-        if (_isSync) {
-            sync();
-        }
-    }
-
     function setTimelock(address _newTimelock) external onlyByOwnGov {
         timelock = _newTimelock;
-    }
-
-    function withdrawUNO(address _to) external onlyByOwnGov {
-        emittedToken.safeTransfer(_to, emittedToken.balanceOf(address(this)));
     }
 }
