@@ -5,7 +5,6 @@ pragma solidity =0.8.23;
 // https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -14,7 +13,6 @@ import "../interfaces/dao/IVotingEscrow.sol";
 import "../libraries/TransferHelper.sol";
 
 contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
-    using SafeMath for uint256;
     using SafeERC20 for ERC20;
 
     /* ========== STATE VARIABLES ========== */
@@ -66,7 +64,10 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     /* ========== MODIFIERS ========== */
 
     modifier onlyByOwnGov() {
-        require(msg.sender == owner() || msg.sender == timelock_address, "Not owner or timelock");
+        require(
+            msg.sender == owner() || msg.sender == timelock_address,
+            "Not owner or timelock"
+        );
         _;
     }
 
@@ -82,7 +83,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor (
+    constructor(
         address _emittedToken,
         address _timelock_address,
         address _veUNO_address
@@ -100,24 +101,32 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     /* ========== VIEWS ========== */
 
     function fractionParticipating() external view returns (uint256) {
-        return totalVeUNOParticipating.mul(PRICE_PRECISION).div(totalVeUNOSupplyStored);
+        return
+            (totalVeUNOParticipating * PRICE_PRECISION) / totalVeUNOSupplyStored;
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
-    function eligibleCurrentVeUNO(address account) public view returns (uint256 eligible_veuno_bal, uint256 stored_ending_timestamp) {
+    function eligibleCurrentVeUNO(
+        address account
+    )
+        public
+        view
+        returns (uint256 eligible_veuno_bal, uint256 stored_ending_timestamp)
+    {
         uint256 curr_veuno_bal = veUNO.balanceOf(account);
-        
+
         // Stored is used to prevent abuse
         stored_ending_timestamp = userVeUNOEndpointCheckpointed[account];
 
         // Only unexpired veUNO should be eligible
-        if (stored_ending_timestamp != 0 && (block.timestamp >= stored_ending_timestamp)){
+        if (
+            stored_ending_timestamp != 0 &&
+            (block.timestamp >= stored_ending_timestamp)
+        ) {
             eligible_veuno_bal = 0;
-        }
-        else if (block.timestamp >= stored_ending_timestamp){
+        } else if (block.timestamp >= stored_ending_timestamp) {
             eligible_veuno_bal = 0;
-        }
-        else {
+        } else {
             eligible_veuno_bal = curr_veuno_bal;
         }
     }
@@ -126,32 +135,31 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         return Math.min(block.timestamp, periodFinish);
     }
 
-    function yieldPerVeUNO() public view returns (uint256) {
+    function yieldPerVeUNO() public view returns (uint256 yield) {
         if (totalVeUNOSupplyStored == 0) {
-            return yieldPerVeUNOStored;
+            yield = yieldPerVeUNOStored;
         } else {
-            return (
-                yieldPerVeUNOStored.add(
-                    lastTimeYieldApplicable()
-                        .sub(lastUpdateTime)
-                        .mul(yieldRate)
-                        .mul(1e18)
-                        .div(totalVeUNOSupplyStored)
-                )
-            );
+            yield =
+                yieldPerVeUNOStored +
+                (((lastTimeYieldApplicable() - lastUpdateTime) *
+                    yieldRate *
+                    1e18) / totalVeUNOSupplyStored);
         }
     }
 
-    function earned(address account) public view returns (uint256) {
+    function earned(address account) public view returns (uint256 yieldAmount) {
         // Uninitialized users should not earn anything yet
         if (!userIsInitialized[account]) return 0;
 
         // Get eligible veUNO balances
-        (uint256 eligible_current_veuno, uint256 ending_timestamp) = eligibleCurrentVeUNO(account);
+        (
+            uint256 eligible_current_veuno,
+            uint256 ending_timestamp
+        ) = eligibleCurrentVeUNO(account);
 
         // If your veUNO is unlocked
         uint256 eligible_time_fraction = PRICE_PRECISION;
-        if (eligible_current_veuno == 0){
+        if (eligible_current_veuno == 0) {
             // And you already claimed after expiration
             if (lastRewardClaimTime[account] >= ending_timestamp) {
                 // You get NOTHING. You LOSE. Good DAY ser!
@@ -159,9 +167,9 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
             }
             // You haven't claimed yet
             else {
-                uint256 eligible_time = (ending_timestamp).sub(lastRewardClaimTime[account]);
-                uint256 total_time = (block.timestamp).sub(lastRewardClaimTime[account]);
-                eligible_time_fraction = PRICE_PRECISION.mul(eligible_time).div(total_time);
+                uint256 eligible_time = ending_timestamp - lastRewardClaimTime[account];
+                uint256 total_time = block.timestamp - lastRewardClaimTime[account];
+                eligible_time_fraction = (eligible_time * PRICE_PRECISION) / total_time;
             }
         }
 
@@ -170,25 +178,24 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         uint256 veuno_balance_to_use;
         {
             uint256 old_veuno_balance = userVeUNOCheckpointed[account];
-            if (eligible_current_veuno > old_veuno_balance){
+            if (eligible_current_veuno > old_veuno_balance) {
                 veuno_balance_to_use = old_veuno_balance;
-            }
-            else {
-                veuno_balance_to_use = ((eligible_current_veuno).add(old_veuno_balance)).div(2); 
+            } else {
+                veuno_balance_to_use =
+                    (eligible_current_veuno + old_veuno_balance) /
+                    2;
             }
         }
 
-        return (
-            veuno_balance_to_use
-                .mul(yieldPerVeUNO().sub(userYieldPerTokenPaid[account]))
-                .mul(eligible_time_fraction)
-                .div(1e18 * PRICE_PRECISION)
-                .add(yields[account])
-        );
+        yieldAmount =
+            yields[account] +
+            ((veuno_balance_to_use *
+                (yieldPerVeUNO() - userYieldPerTokenPaid[account]) *
+                eligible_time_fraction) / (PRICE_PRECISION * 1e18));
     }
 
     function getYieldForDuration() external view returns (uint256) {
-        return (yieldRate.mul(yieldDuration));
+        return yieldRate * yieldDuration;
     }
 
     /* ========== MUTATIVE FUNCTIONS ========== */
@@ -208,16 +215,18 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         userVeUNOCheckpointed[account] = new_veuno_balance;
 
         // Update the user's stored ending timestamp
-        IVotingEscrow.LockedBalance memory curr_locked_bal_pack = veUNO.locked(account);
+        IVotingEscrow.LockedBalance memory curr_locked_bal_pack = veUNO.locked(
+            account
+        );
         userVeUNOEndpointCheckpointed[account] = curr_locked_bal_pack.end;
 
         // Update the total amount participating
         if (new_veuno_balance >= old_veuno_balance) {
-            uint256 weight_diff = new_veuno_balance.sub(old_veuno_balance);
-            totalVeUNOParticipating = totalVeUNOParticipating.add(weight_diff);
+            uint256 weight_diff = new_veuno_balance - old_veuno_balance;
+            totalVeUNOParticipating = totalVeUNOParticipating + weight_diff;
         } else {
-            uint256 weight_diff = old_veuno_balance.sub(new_veuno_balance);
-            totalVeUNOParticipating = totalVeUNOParticipating.sub(weight_diff);
+            uint256 weight_diff = old_veuno_balance - new_veuno_balance;
+            totalVeUNOParticipating = totalVeUNOParticipating - weight_diff;
         }
 
         // Mark the user as initialized
@@ -245,7 +254,13 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         _checkpointUser(msg.sender);
     }
 
-    function getYield() external nonReentrant notYieldCollectionPaused checkpointUser(msg.sender) returns (uint256 yield0) {
+    function getYield()
+        external
+        nonReentrant
+        notYieldCollectionPaused
+        checkpointUser(msg.sender)
+        returns (uint256 yield0)
+    {
         require(greylist[msg.sender] == false, "Address has been greylisted");
 
         yield0 = yields[msg.sender];
@@ -262,7 +277,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
-
 
     function sync() public {
         // Update the total veUNO supply
@@ -284,16 +298,16 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
         // Update the new yieldRate
         if (block.timestamp >= periodFinish) {
-            yieldRate = amount.div(yieldDuration);
+            yieldRate = amount / yieldDuration;
         } else {
-            uint256 remaining = periodFinish.sub(block.timestamp);
-            uint256 leftover = remaining.mul(yieldRate);
-            yieldRate = amount.add(leftover).div(yieldDuration);
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * yieldRate;
+            yieldRate = (amount + leftover) / yieldDuration;
         }
-        
+
         // Update duration-related info
         lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp.add(yieldDuration);
+        periodFinish = block.timestamp + yieldDuration;
 
         emit RewardAdded(amount, yieldRate);
     }
@@ -301,14 +315,20 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     /* ========== RESTRICTED FUNCTIONS ========== */
 
     // Added to support recovering LP Yield and other mistaken tokens from other systems to be distributed to holders
-    function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyByOwnGov {
+    function recoverERC20(
+        address tokenAddress,
+        uint256 tokenAmount
+    ) external onlyByOwnGov {
         // Only the owner address can ever receive the recovery withdrawal
         TransferHelper.safeTransfer(tokenAddress, owner(), tokenAmount);
         emit RecoveredERC20(tokenAddress, tokenAmount);
     }
 
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
-        require(periodFinish == 0 || block.timestamp > periodFinish, "Previous yield period must be complete before changing the duration for the new period");
+        require(
+            periodFinish == 0 || block.timestamp > periodFinish,
+            "Previous yield period must be complete before changing the duration for the new period"
+        );
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(yieldDuration);
     }
@@ -325,7 +345,10 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         yieldCollectionPaused = _yieldCollectionPaused;
     }
 
-    function setYieldRate(uint256 _new_rate0, bool sync_too) external onlyByOwnGov {
+    function setYieldRate(
+        uint256 _new_rate0,
+        bool sync_too
+    ) external onlyByOwnGov {
         yieldRate = _new_rate0;
 
         if (sync_too) {
@@ -333,7 +356,10 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         }
     }
 
-    function setPeriodFinish(uint256 newPeriod, bool sync_too) external onlyByOwnGov {
+    function setPeriodFinish(
+        uint256 newPeriod,
+        bool sync_too
+    ) external onlyByOwnGov {
         periodFinish = newPeriod;
 
         if (sync_too) {
@@ -346,14 +372,26 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function withdrawUNO(address to) external onlyByOwnGov {
-        TransferHelper.safeTransfer(emitted_token_address, to, IERC20(emitted_token_address).balanceOf(address(this)));
+        TransferHelper.safeTransfer(
+            emitted_token_address,
+            to,
+            IERC20(emitted_token_address).balanceOf(address(this))
+        );
     }
 
     /* ========== EVENTS ========== */
 
     event RewardAdded(uint256 reward, uint256 yieldRate);
-    event OldYieldCollected(address indexed user, uint256 yieldAmount, address token_address);
-    event YieldCollected(address indexed user, uint256 yieldAmount, address token_address);
+    event OldYieldCollected(
+        address indexed user,
+        uint256 yieldAmount,
+        address token_address
+    );
+    event YieldCollected(
+        address indexed user,
+        uint256 yieldAmount,
+        address token_address
+    );
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
     event YieldPeriodRenewed(address token, uint256 yieldRate);
