@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity =0.8.23;
 
 // Originally inspired by Synthetix.io, but heavily modified by the UNO team
 // https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
