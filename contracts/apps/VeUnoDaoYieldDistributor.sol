@@ -56,7 +56,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     event YieldCollected(
         address indexed user,
         uint256 yieldAmount,
-        address token_address
+        address token
     );
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
@@ -100,23 +100,22 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     )
         public
         view
-        returns (uint256 eligible_veuno_bal, uint256 stored_ending_timestamp)
+        returns (uint256 eligibleVeUnoBal, uint256 storedEndTimestamp)
     {
-        uint256 curr_veuno_bal = veUNO.balanceOf(_account);
+        uint256 currVeUnoBal = veUNO.balanceOf(_account);
 
         // Stored is used to prevent abuse
-        stored_ending_timestamp = userVeUNOEndpointCheckpointed[_account];
+        storedEndTimestamp = userVeUNOEndpointCheckpointed[_account];
 
         // Only unexpired veUNO should be eligible
         if (
-            stored_ending_timestamp != 0 &&
-            (block.timestamp >= stored_ending_timestamp)
+            storedEndTimestamp != 0 && (block.timestamp >= storedEndTimestamp)
         ) {
-            eligible_veuno_bal = 0;
-        } else if (block.timestamp >= stored_ending_timestamp) {
-            eligible_veuno_bal = 0;
+            eligibleVeUnoBal = 0;
+        } else if (block.timestamp >= storedEndTimestamp) {
+            eligibleVeUnoBal = 0;
         } else {
-            eligible_veuno_bal = curr_veuno_bal;
+            eligibleVeUnoBal = currVeUnoBal;
         }
     }
 
@@ -136,55 +135,57 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         }
     }
 
-    function earned(address _account) public view returns (uint256 yieldAmount) {
+    function earned(
+        address _account
+    ) public view returns (uint256 yieldAmount) {
         // Uninitialized users should not earn anything yet
         if (!userIsInitialized[_account]) return 0;
 
         // Get eligible veUNO balances
         (
-            uint256 eligible_current_veuno,
-            uint256 ending_timestamp
+            uint256 eligibleCurrentVeUno,
+            uint256 endTimestamp
         ) = eligibleCurrentVeUNO(_account);
 
         // If your veUNO is unlocked
-        uint256 eligible_time_fraction = PRICE_PRECISION;
-        if (eligible_current_veuno == 0) {
+        uint256 eligibleTimeFraction = PRICE_PRECISION;
+        if (eligibleCurrentVeUno == 0) {
             // And you already claimed after expiration
-            if (lastRewardClaimTime[_account] >= ending_timestamp) {
+            if (lastRewardClaimTime[_account] >= endTimestamp) {
                 // You get NOTHING. You LOSE. Good DAY ser!
                 return 0;
             }
             // You haven't claimed yet
             else {
-                uint256 eligible_time = ending_timestamp -
+                uint256 eligibleTime = endTimestamp -
                     lastRewardClaimTime[_account];
-                uint256 total_time = block.timestamp -
+                uint256 totalTime = block.timestamp -
                     lastRewardClaimTime[_account];
-                eligible_time_fraction =
-                    (eligible_time * PRICE_PRECISION) /
-                    total_time;
+                eligibleTimeFraction =
+                    (eligibleTime * PRICE_PRECISION) /
+                    totalTime;
             }
         }
 
         // If the amount of veUNO increased, only pay off based on the old balance
         // Otherwise, take the midpoint
-        uint256 veuno_balance_to_use;
+        uint256 veUnoBalanceToUse;
         {
-            uint256 old_veuno_balance = userVeUNOCheckpointed[_account];
-            if (eligible_current_veuno > old_veuno_balance) {
-                veuno_balance_to_use = old_veuno_balance;
+            uint256 oldVeUnoBalance = userVeUNOCheckpointed[_account];
+            if (eligibleCurrentVeUno > oldVeUnoBalance) {
+                veUnoBalanceToUse = oldVeUnoBalance;
             } else {
-                veuno_balance_to_use =
-                    (eligible_current_veuno + old_veuno_balance) /
+                veUnoBalanceToUse =
+                    (eligibleCurrentVeUno + oldVeUnoBalance) /
                     2;
             }
         }
 
         yieldAmount =
             yields[_account] +
-            ((veuno_balance_to_use *
+            ((veUnoBalanceToUse *
                 (yieldPerVeUNO() - userYieldPerTokenPaid[_account]) *
-                eligible_time_fraction) / (PRICE_PRECISION * 1e18));
+                eligibleTimeFraction) / (PRICE_PRECISION * 1e18));
     }
 
     // Anyone can checkpoint another user
@@ -217,7 +218,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
-    function notifyRewardAmount(uint256 _amount) external {
+    function notifyRewardAmount(uint256 _amount) external { // TODO: add _user param for token transfer
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "Sender not whitelisted");
 
@@ -262,25 +263,25 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         _syncEarned(_account);
 
         // Get the old and the new veUNO balances
-        uint256 old_veuno_balance = userVeUNOCheckpointed[_account];
-        uint256 new_veuno_balance = veUNO.balanceOf(_account);
+        uint256 oldVeUnoBalance = userVeUNOCheckpointed[_account];
+        uint256 newVeUnoBalance = veUNO.balanceOf(_account);
 
         // Update the user's stored veUNO balance
-        userVeUNOCheckpointed[_account] = new_veuno_balance;
+        userVeUNOCheckpointed[_account] = newVeUnoBalance;
 
         // Update the user's stored ending timestamp
-        IVotingEscrow.LockedBalance memory curr_locked_bal_pack = veUNO.locked(
+        IVotingEscrow.LockedBalance memory userCurrentLockedInfo = veUNO.locked(
             _account
         );
-        userVeUNOEndpointCheckpointed[_account] = curr_locked_bal_pack.end;
+        userVeUNOEndpointCheckpointed[_account] = userCurrentLockedInfo.end;
 
         // Update the total amount participating
-        if (new_veuno_balance >= old_veuno_balance) {
-            uint256 weight_diff = new_veuno_balance - old_veuno_balance;
-            totalVeUNOParticipating = totalVeUNOParticipating + weight_diff;
+        if (newVeUnoBalance >= oldVeUnoBalance) {
+            uint256 weightDiff = newVeUnoBalance - oldVeUnoBalance;
+            totalVeUNOParticipating = totalVeUNOParticipating + weightDiff;
         } else {
-            uint256 weight_diff = old_veuno_balance - new_veuno_balance;
-            totalVeUNOParticipating = totalVeUNOParticipating - weight_diff;
+            uint256 weightDiff = oldVeUnoBalance - newVeUnoBalance;
+            totalVeUNOParticipating = totalVeUNOParticipating - weightDiff;
         }
 
         // Mark the user as initialized
@@ -297,8 +298,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
             userYieldPerTokenPaid[_account] = yieldPerVeUNOStored;
         }
     }
-
-    /* ========== RESTRICTED FUNCTIONS ========== */
 
     // Added to support recovering LP Yield and other mistaken tokens from other systems to be distributed to holders
     function recoverERC20(
@@ -319,8 +318,8 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         emit YieldDurationUpdated(_yieldDuration);
     }
 
-    function greylistAddress(address _user) external onlyByOwnGov {
-        greylist[_user] = !(greylist[_user]);
+    function toggleGreylist(address _user) external onlyByOwnGov {
+        greylist[_user] = !greylist[_user];
     }
 
     function toggleRewardNotifier(address _notifier) external onlyByOwnGov {
