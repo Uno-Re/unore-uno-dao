@@ -20,50 +20,39 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     // Constant for price precision
-    uint256 private constant PRICE_PRECISION = 1e6;
+    uint256 public constant PRICE_PRECISION = 1e6;
 
     // Stores last reward time of staker
-    mapping(address => uint256) private lastRewardClaimTime;
-
+    mapping(address => uint256) public lastRewardClaimTime;
     // Vote escrow contract, used for voting power
-    IVotingEscrow private veUNO;
+    IVotingEscrow public veUNO;
     // Reward token which staker earns for staking Uno
     IERC20 public emittedToken;
-
-    // Admin addresses
-    address public timelock_address;
-
     // Yield and period related
     uint256 public periodFinish;
     uint256 public lastUpdateTime;
     uint256 public yieldRate;
     uint256 public yieldDuration = 604800; // 7 * 86400  (7 days)
-    mapping(address => bool) public reward_notifiers;
-
     // Yield tracking
-    uint256 public yieldPerVeUNOStored = 0;
+    uint256 public yieldPerVeUNOStored;
     mapping(address => uint256) public userYieldPerTokenPaid;
     mapping(address => uint256) public yields;
-
     // veUNO tracking
-    uint256 public totalVeUNOParticipating = 0;
-    uint256 public totalVeUNOSupplyStored = 0;
+    uint256 public totalVeUNOParticipating;
+    uint256 public totalVeUNOSupplyStored;
     mapping(address => bool) public userIsInitialized;
     mapping(address => uint256) public userVeUNOCheckpointed;
     mapping(address => uint256) public userVeUNOEndpointCheckpointed;
-
     // Greylists
     mapping(address => bool) public greylist;
-
     // Admin booleans for emergencies
-    bool public yieldCollectionPaused = false; // For emergencies
+    bool public yieldCollectionPaused; // For emergencies, by default "False"
+    // Used to change secure states
+    address public timelock_address;
+    // Stores user's flag for reward apy update
+    mapping(address => bool) public reward_notifiers;
 
     event RewardAdded(uint256 reward, uint256 yieldRate);
-    event OldYieldCollected(
-        address indexed user,
-        uint256 yieldAmount,
-        address token_address
-    ); // TODO: remove, unused
     event YieldCollected(
         address indexed user,
         uint256 yieldAmount,
@@ -71,8 +60,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     );
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
-    event YieldPeriodRenewed(address token, uint256 yieldRate); // TODO: remove, unused
-    event DefaultInitialization(); // TODO: remove, unused
 
     /* ========== MODIFIERS ========== */
 
@@ -85,7 +72,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     modifier notYieldCollectionPaused() {
-        require(yieldCollectionPaused == false, "Yield collection is paused");
+        require(yieldCollectionPaused == false, "Yield collection is paused"); // TODO
         _;
     }
 
@@ -93,8 +80,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         _checkpointUser(account);
         _;
     }
-
-    /* ========== CONSTRUCTOR ========== */
 
     constructor(IERC20 _emittedToken, address _timelock, address _veUNO) {
         emittedToken = _emittedToken;
@@ -105,12 +90,11 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         reward_notifiers[msg.sender] = true;
     }
 
-    /* ========== VIEWS ========== */
-
-    function fractionParticipating() external view returns (uint256) {
-        return
-            (totalVeUNOParticipating * PRICE_PRECISION) /
-            totalVeUNOSupplyStored;
+    function sync() public {
+        // Update the total veUNO supply
+        yieldPerVeUNOStored = yieldPerVeUNO();
+        totalVeUNOSupplyStored = veUNO.totalSupply();
+        lastUpdateTime = lastTimeYieldApplicable();
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
@@ -206,11 +190,72 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
                 eligible_time_fraction) / (PRICE_PRECISION * 1e18));
     }
 
+    // Anyone can checkpoint another user
+    function checkpointOtherUser(address user_addr) external {
+        _checkpointUser(user_addr);
+    }
+
+    // Checkpoints the user
+    function checkpoint() external {
+        _checkpointUser(msg.sender);
+    }
+
+    function getYield()
+        external
+        nonReentrant
+        notYieldCollectionPaused
+        checkpointUser(msg.sender)
+        returns (uint256 yield0)
+    {
+        require(greylist[msg.sender] == false, "Address has been greylisted");
+
+        yield0 = yields[msg.sender];
+
+        if (yield0 > 0) {
+            yields[msg.sender] = 0;
+            emittedToken.safeTransfer(msg.sender, yield0);
+            emit YieldCollected(msg.sender, yield0, address(emittedToken));
+        }
+
+        lastRewardClaimTime[msg.sender] = block.timestamp;
+    }
+
+    function notifyRewardAmount(uint256 amount) external {
+        // Only whitelisted addresses can notify rewards
+        require(reward_notifiers[msg.sender], "Sender not whitelisted");
+
+        // Handle the transfer of emission tokens via `transferFrom` to reduce the number
+        // of transactions required and ensure correctness of the smission amount
+        emittedToken.safeTransferFrom(msg.sender, address(this), amount);
+
+        // Update some values beforehand
+        sync();
+
+        // Update the new yieldRate
+        if (block.timestamp >= periodFinish) {
+            yieldRate = amount / yieldDuration;
+        } else {
+            uint256 remaining = periodFinish - block.timestamp;
+            uint256 leftover = remaining * yieldRate;
+            yieldRate = (amount + leftover) / yieldDuration;
+        }
+
+        // Update duration-related info
+        lastUpdateTime = block.timestamp;
+        periodFinish = block.timestamp + yieldDuration;
+
+        emit RewardAdded(amount, yieldRate);
+    }
+
+    function fractionParticipating() external view returns (uint256) {
+        return
+            (totalVeUNOParticipating * PRICE_PRECISION) /
+            totalVeUNOSupplyStored;
+    }
+
     function getYieldForDuration() external view returns (uint256) {
         return yieldRate * yieldDuration;
     }
-
-    /* ========== MUTATIVE FUNCTIONS ========== */
 
     function _checkpointUser(address account) internal {
         // Need to retro-adjust some things if the period hasn't been renewed, then start a new one
@@ -254,70 +299,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
             yields[account] = earned0;
             userYieldPerTokenPaid[account] = yieldPerVeUNOStored;
         }
-    }
-
-    // Anyone can checkpoint another user
-    function checkpointOtherUser(address user_addr) external {
-        _checkpointUser(user_addr);
-    }
-
-    // Checkpoints the user
-    function checkpoint() external {
-        _checkpointUser(msg.sender);
-    }
-
-    function getYield()
-        external
-        nonReentrant
-        notYieldCollectionPaused
-        checkpointUser(msg.sender)
-        returns (uint256 yield0)
-    {
-        require(greylist[msg.sender] == false, "Address has been greylisted");
-
-        yield0 = yields[msg.sender];
-
-        if (yield0 > 0) {
-            yields[msg.sender] = 0;
-            emittedToken.safeTransfer(msg.sender, yield0);
-            emit YieldCollected(msg.sender, yield0, address(emittedToken));
-        }
-
-        lastRewardClaimTime[msg.sender] = block.timestamp;
-    }
-
-    function sync() public {
-        // Update the total veUNO supply
-        yieldPerVeUNOStored = yieldPerVeUNO();
-        totalVeUNOSupplyStored = veUNO.totalSupply();
-        lastUpdateTime = lastTimeYieldApplicable();
-    }
-
-    function notifyRewardAmount(uint256 amount) external {
-        // Only whitelisted addresses can notify rewards
-        require(reward_notifiers[msg.sender], "Sender not whitelisted");
-
-        // Handle the transfer of emission tokens via `transferFrom` to reduce the number
-        // of transactions required and ensure correctness of the smission amount
-        emittedToken.safeTransferFrom(msg.sender, address(this), amount);
-
-        // Update some values beforehand
-        sync();
-
-        // Update the new yieldRate
-        if (block.timestamp >= periodFinish) {
-            yieldRate = amount / yieldDuration;
-        } else {
-            uint256 remaining = periodFinish - block.timestamp;
-            uint256 leftover = remaining * yieldRate;
-            yieldRate = (amount + leftover) / yieldDuration;
-        }
-
-        // Update duration-related info
-        lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp + yieldDuration;
-
-        emit RewardAdded(amount, yieldRate);
     }
 
     /* ========== RESTRICTED FUNCTIONS ========== */
