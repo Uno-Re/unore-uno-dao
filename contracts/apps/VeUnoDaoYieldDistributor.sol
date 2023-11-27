@@ -70,7 +70,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     modifier notYieldCollectionPaused() {
-        require(yieldCollectionPaused == false, "Yield collection is paused"); // TODO
+        require(!yieldCollectionPaused, "Yield collection is paused");
         _;
     }
 
@@ -205,7 +205,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         checkpointUser(msg.sender)
         returns (uint256 yield0)
     {
-        require(greylist[msg.sender] == false, "Address has been greylisted"); // TODO
+        require(!greylist[msg.sender], "Address has been greylisted");
 
         yield0 = yields[msg.sender];
 
@@ -218,13 +218,13 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
-    function notifyRewardAmount(uint256 _amount) external { // TODO: add _user param for token transfer
+    function notifyRewardAmount(address _user, uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "Sender not whitelisted");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
-        // of transactions required and ensure correctness of the smission amount
-        emittedToken.safeTransferFrom(msg.sender, address(this), _amount);
+        // of transactions required and ensure correctness of the emission amount
+        emittedToken.safeTransferFrom(_user, address(this), _amount);
 
         // Update some values beforehand
         sync();
@@ -311,7 +311,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(
-            periodFinish == 0 || block.timestamp > periodFinish, // TODO
+            block.timestamp > periodFinish,
             "Previous yield period must be complete before changing the duration for the new period"
         );
         yieldDuration = _yieldDuration;
