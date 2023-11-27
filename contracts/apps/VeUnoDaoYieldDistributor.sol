@@ -64,13 +64,13 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     modifier onlyByOwnGov() {
         require(
             msg.sender == owner() || msg.sender == timelock,
-            "Not owner or timelock"
+            "VeUnoYD: !O/T"
         );
         _;
     }
 
     modifier notYieldCollectionPaused() {
-        require(!yieldCollectionPaused, "Yield collection is paused");
+        require(!yieldCollectionPaused, "VeUnoYD: YCP");
         _;
     }
 
@@ -205,7 +205,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         checkpointUser(msg.sender)
         returns (uint256 yield0)
     {
-        require(!greylist[msg.sender], "Address has been greylisted");
+        require(!greylist[msg.sender], "VeUnoYD: GLU");
 
         yield0 = yields[msg.sender];
 
@@ -220,7 +220,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     function notifyRewardAmount(address _user, uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
-        require(rewardNotifiers[msg.sender], "Sender not whitelisted");
+        require(rewardNotifiers[msg.sender], "VeUnoYD: !Notifier");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the emission amount
@@ -310,10 +310,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
-        require(
-            block.timestamp > periodFinish,
-            "Previous yield period must be complete before changing the duration for the new period"
-        );
+        require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(_yieldDuration);
     }
