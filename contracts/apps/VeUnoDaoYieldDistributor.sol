@@ -4,22 +4,23 @@ pragma solidity =0.8.23;
 // Originally inspired by Synthetix.io, but heavily modified by the UNO team
 // https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
 
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import "../interfaces/dao/IVotingEscrow.sol";
 import "../libraries/TransferHelper.sol";
 
 contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
-    using SafeERC20 for ERC20;
+    using SafeERC20 for IERC20;
 
     /* ========== STATE VARIABLES ========== */
 
     // Instances
     IVotingEscrow private veUNO;
-    ERC20 public emittedToken;
+    IERC20 public emittedToken;
 
     // Addresses
     address public emitted_token_address;
@@ -85,15 +86,15 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     constructor(
         address _emittedToken,
-        address _timelock_address,
-        address _veUNO_address
+        address _timelock,
+        address _veUNO
     ) {
         emitted_token_address = _emittedToken;
-        emittedToken = ERC20(_emittedToken);
+        emittedToken = IERC20(_emittedToken);
 
-        veUNO = IVotingEscrow(_veUNO_address);
+        veUNO = IVotingEscrow(_veUNO);
         lastUpdateTime = block.timestamp;
-        timelock_address = _timelock_address;
+        timelock_address = _timelock;
 
         reward_notifiers[msg.sender] = true;
     }
