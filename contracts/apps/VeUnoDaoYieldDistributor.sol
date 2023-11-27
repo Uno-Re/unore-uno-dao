@@ -4,32 +4,34 @@ pragma solidity =0.8.23;
 // Originally inspired by Synthetix.io, but heavily modified by the UNO team
 // https://github.com/Synthetixio/synthetix/blob/develop/contracts/StakingRewards.sol
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../interfaces/dao/IVotingEscrow.sol";
-import "../libraries/TransferHelper.sol";
+import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
 contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    /* ========== STATE VARIABLES ========== */
-
-    // Instances
-    IVotingEscrow private veUNO;
-    IERC20 public emittedToken;
-
-    // Addresses
-    address public emitted_token_address;
-
-    // Admin addresses
-    address public timelock_address;
+    struct LockedBalance {
+        int128 amount;
+        uint256 end;
+    }
 
     // Constant for price precision
     uint256 private constant PRICE_PRECISION = 1e6;
+
+    // Stores last reward time of staker
+    mapping(address => uint256) private lastRewardClaimTime;
+
+    // Vote escrow contract, used for voting power
+    IVotingEscrow private veUNO;
+    // Reward token which staker earns for staking Uno
+    IERC20 public emittedToken;
+
+    // Admin addresses
+    address public timelock_address;
 
     // Yield and period related
     uint256 public periodFinish;
@@ -49,7 +51,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     mapping(address => bool) public userIsInitialized;
     mapping(address => uint256) public userVeUNOCheckpointed;
     mapping(address => uint256) public userVeUNOEndpointCheckpointed;
-    mapping(address => uint256) private lastRewardClaimTime; // staker addr -> timestamp
 
     // Greylists
     mapping(address => bool) public greylist;
@@ -57,10 +58,21 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     // Admin booleans for emergencies
     bool public yieldCollectionPaused = false; // For emergencies
 
-    struct LockedBalance {
-        int128 amount;
-        uint256 end;
-    }
+    event RewardAdded(uint256 reward, uint256 yieldRate);
+    event OldYieldCollected(
+        address indexed user,
+        uint256 yieldAmount,
+        address token_address
+    ); // TODO: remove, unused
+    event YieldCollected(
+        address indexed user,
+        uint256 yieldAmount,
+        address token_address
+    );
+    event YieldDurationUpdated(uint256 newDuration);
+    event RecoveredERC20(address token, uint256 amount);
+    event YieldPeriodRenewed(address token, uint256 yieldRate); // TODO: remove, unused
+    event DefaultInitialization(); // TODO: remove, unused
 
     /* ========== MODIFIERS ========== */
 
@@ -84,14 +96,8 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
-        address _emittedToken,
-        address _timelock,
-        address _veUNO
-    ) {
-        emitted_token_address = _emittedToken;
-        emittedToken = IERC20(_emittedToken);
-
+    constructor(IERC20 _emittedToken, address _timelock, address _veUNO) {
+        emittedToken = _emittedToken;
         veUNO = IVotingEscrow(_veUNO);
         lastUpdateTime = block.timestamp;
         timelock_address = _timelock;
@@ -103,7 +109,8 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     function fractionParticipating() external view returns (uint256) {
         return
-            (totalVeUNOParticipating * PRICE_PRECISION) / totalVeUNOSupplyStored;
+            (totalVeUNOParticipating * PRICE_PRECISION) /
+            totalVeUNOSupplyStored;
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
@@ -133,7 +140,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function lastTimeYieldApplicable() public view returns (uint256) {
-        return Math.min(block.timestamp, periodFinish);
+        return block.timestamp < periodFinish ? block.timestamp : periodFinish; // return min value
     }
 
     function yieldPerVeUNO() public view returns (uint256 yield) {
@@ -168,9 +175,13 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
             }
             // You haven't claimed yet
             else {
-                uint256 eligible_time = ending_timestamp - lastRewardClaimTime[account];
-                uint256 total_time = block.timestamp - lastRewardClaimTime[account];
-                eligible_time_fraction = (eligible_time * PRICE_PRECISION) / total_time;
+                uint256 eligible_time = ending_timestamp -
+                    lastRewardClaimTime[account];
+                uint256 total_time = block.timestamp -
+                    lastRewardClaimTime[account];
+                eligible_time_fraction =
+                    (eligible_time * PRICE_PRECISION) /
+                    total_time;
             }
         }
 
@@ -268,12 +279,8 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
         if (yield0 > 0) {
             yields[msg.sender] = 0;
-            TransferHelper.safeTransfer(
-                emitted_token_address,
-                msg.sender,
-                yield0
-            );
-            emit YieldCollected(msg.sender, yield0, emitted_token_address);
+            emittedToken.safeTransfer(msg.sender, yield0);
+            emit YieldCollected(msg.sender, yield0, address(emittedToken));
         }
 
         lastRewardClaimTime[msg.sender] = block.timestamp;
@@ -317,12 +324,12 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     // Added to support recovering LP Yield and other mistaken tokens from other systems to be distributed to holders
     function recoverERC20(
-        address tokenAddress,
+        IERC20 tokenAddress,
         uint256 tokenAmount
     ) external onlyByOwnGov {
-        // Only the owner address can ever receive the recovery withdrawal
-        TransferHelper.safeTransfer(tokenAddress, owner(), tokenAmount);
-        emit RecoveredERC20(tokenAddress, tokenAmount);
+        // Only the owner address can receive the recovery withdrawal
+        tokenAddress.safeTransfer(owner(), tokenAmount);
+        emit RecoveredERC20(address(tokenAddress), tokenAmount);
     }
 
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
@@ -373,28 +380,6 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function withdrawUNO(address to) external onlyByOwnGov {
-        TransferHelper.safeTransfer(
-            emitted_token_address,
-            to,
-            IERC20(emitted_token_address).balanceOf(address(this))
-        );
+        emittedToken.safeTransfer(to, emittedToken.balanceOf(address(this)));
     }
-
-    /* ========== EVENTS ========== */
-
-    event RewardAdded(uint256 reward, uint256 yieldRate);
-    event OldYieldCollected(
-        address indexed user,
-        uint256 yieldAmount,
-        address token_address
-    );
-    event YieldCollected(
-        address indexed user,
-        uint256 yieldAmount,
-        address token_address
-    );
-    event YieldDurationUpdated(uint256 newDuration);
-    event RecoveredERC20(address token, uint256 amount);
-    event YieldPeriodRenewed(address token, uint256 yieldRate);
-    event DefaultInitialization();
 }
