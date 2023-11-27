@@ -40,17 +40,17 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     // veUNO tracking
     uint256 public totalVeUNOParticipating;
     uint256 public totalVeUNOSupplyStored;
-    mapping(address => bool) public userIsInitialized;
     mapping(address => uint256) public userVeUNOCheckpointed;
     mapping(address => uint256) public userVeUNOEndpointCheckpointed;
+    mapping(address => bool) public userIsInitialized;
     // Greylists
     mapping(address => bool) public greylist;
     // Admin booleans for emergencies
     bool public yieldCollectionPaused; // For emergencies, by default "False"
     // Used to change secure states
-    address public timelock_address;
+    address public timelock;
     // Stores user's flag for reward apy update
-    mapping(address => bool) public reward_notifiers;
+    mapping(address => bool) public rewardNotifiers;
 
     event RewardAdded(uint256 reward, uint256 yieldRate);
     event YieldCollected(
@@ -61,11 +61,9 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
 
-    /* ========== MODIFIERS ========== */
-
     modifier onlyByOwnGov() {
         require(
-            msg.sender == owner() || msg.sender == timelock_address,
+            msg.sender == owner() || msg.sender == timelock,
             "Not owner or timelock"
         );
         _;
@@ -85,9 +83,9 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
         emittedToken = _emittedToken;
         veUNO = IVotingEscrow(_veUNO);
         lastUpdateTime = block.timestamp;
-        timelock_address = _timelock;
+        timelock = _timelock;
 
-        reward_notifiers[msg.sender] = true;
+        rewardNotifiers[msg.sender] = true;
     }
 
     function sync() public {
@@ -222,7 +220,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
 
     function notifyRewardAmount(uint256 amount) external {
         // Only whitelisted addresses can notify rewards
-        require(reward_notifiers[msg.sender], "Sender not whitelisted");
+        require(rewardNotifiers[msg.sender], "Sender not whitelisted");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the smission amount
@@ -327,7 +325,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function toggleRewardNotifier(address notifier_addr) external onlyByOwnGov {
-        reward_notifiers[notifier_addr] = !reward_notifiers[notifier_addr];
+        rewardNotifiers[notifier_addr] = !rewardNotifiers[notifier_addr];
     }
 
     function setPauses(bool _yieldCollectionPaused) external onlyByOwnGov {
@@ -357,7 +355,7 @@ contract VeUnoDaoYieldDistributor is Ownable, ReentrancyGuard {
     }
 
     function setTimelock(address _new_timelock) external onlyByOwnGov {
-        timelock_address = _new_timelock;
+        timelock = _new_timelock;
     }
 
     function withdrawUNO(address to) external onlyByOwnGov {
