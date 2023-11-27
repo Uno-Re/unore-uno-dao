@@ -81,12 +81,25 @@ module.exports = {
     timeout: 300000
   },
   solidity: {
-    version: "0.8.10",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200
+    compilers: [
+      {
+        version: "0.8.10",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+      {
+        version: "0.8.23",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 2000
+          }
+        }
       }
-    }
+    ]
   }
 };
