@@ -64,7 +64,7 @@ contract Resolver is Owned {
         if (block.timestamp >= lastChecked + 7 days) {
             uint256 amount = getRewardAmount();
             bytes4 selector = bytes4(
-                keccak256("notifyRewardAmount(address,uint256")
+                keccak256("notifyRewardAmount(address,uint256)")
             );
             execPayload = abi.encodeWithSelector(
                 selector,
