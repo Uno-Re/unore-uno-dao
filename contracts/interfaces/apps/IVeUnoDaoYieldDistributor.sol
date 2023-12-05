@@ -10,4 +10,6 @@ interface IVeUnoDaoYieldDistributor {
     function periodFinish() external view returns (uint256);
 
     function yieldRate() external view returns (uint256);
+
+    function lastUpdateTime() external view returns (uint256);
 }
