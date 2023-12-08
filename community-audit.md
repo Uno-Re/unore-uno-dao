@@ -114,12 +114,11 @@ a. User input validation to prevent user mistakes is not considered a valid issu
 b. Admin / Owner / Centralization risks would be only be classified with a maximum of Medium Risk as they are treated as trusted parties in most cases.
 c. Use of call vs transfer with the reasoning that the gas price may not be the same value of 2300. This will be considered as a protocol choice and would be considering this issue in the low/informational category. 
 d. Users sending ETH/native tokens accidentally just because a contract allows is not a valid medium/high.
-
+```
 
 ### The Vulnerability bounty payments are as follows:
 ```
   a. XXXX USD for each critical issue discovered, causing a significant loss of user funds.
   b. XXX USD for each high issue discovered, causing a significant loss of user funds.
   Total Bounty max cap - XXXX USDT
-```
 ```
