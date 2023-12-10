@@ -95,3 +95,37 @@ SmartWalletChecker: 0xfB31c911329A89F04FB739d5659043e49762bB5D
 VotingEscrow: 0xBdBC1af93D95909625b18775b14c7D21E00775Aa
 VeUnoDistributor: 0x50A7C5A1a143E7Ada93b6F69027Fe329869A75f1
 NotifyRewardProxy: 0x5D5e8f283be3eb0550f7523a4AACE357DdCC9CF9
+
+## Contracts in scope (commit: 2332f79670f67530f71dbdad2f54949893c1fb0d)
+
+| Type | File   | Logic Contracts | Interfaces | Lines | nLines | nSLOC | Comment Lines | Complex. Score | Capabilities |
+| ---- | ------ | --------------- | ---------- | ----- | ------ | ----- | ------------- | -------------- | ------------ | 
+| 📝 | ./access/Owned.sol | 1 | **** | 33 | 33 | 26 | 1 | 17 | **** |
+| 📚 | ./libraries/TransferHelper.sol | 1 | **** | 28 | 28 | 19 | 5 | 26 | **** |
+| 📝 | ./safe/GnosisSafe.sol | 1 | **** | 422 | 360 | 201 | 135 | 189 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr>** |
+| 📝 | ./safe/base/ModuleManager.sol | 1 | **** | 133 | 123 | 65 | 47 | 100 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./safe/base/Executor.sol | 1 | **** | 27 | 21 | 15 | 5 | 36 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='DelegateCall'>👥</abbr>** |
+| 📝🔍 | ./safe/base/GuardManager.sol | 1 | 1 | 50 | 31 | 21 | 8 | 27 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./safe/base/FallbackManager.sol | 1 | **** | 53 | 53 | 33 | 14 | 73 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./safe/base/OwnerManager.sol | 1 | **** | 149 | 141 | 80 | 49 | 83 | **** |
+| 📝 | ./safe/GnosisSafeL2.sol | 1 | **** | 86 | 70 | 42 | 23 | 15 | **<abbr title='Payable Functions'>💰</abbr>** |
+| 📝 | ./safe/common/SecuredTokenTransfer.sol | 1 | **** | 35 | 31 | 19 | 11 | 42 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./safe/common/SelfAuthorized.sol | 1 | **** | 16 | 16 | 10 | 4 | 4 | **** |
+| 📝 | ./safe/common/Singleton.sol | 1 | **** | 11 | 11 | 4 | 6 | 2 | **** |
+| 📝 | ./safe/common/EtherPaymentFallback.sol | 1 | **** | 13 | 13 | 7 | 4 | 7 | **<abbr title='Payable Functions'>💰</abbr>** |
+| 📝 | ./safe/common/SignatureDecoder.sol | 1 | **** | 36 | 28 | 11 | 16 | 39 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./safe/common/StorageAccessible.sol | 1 | **** | 47 | 47 | 22 | 22 | 79 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='DelegateCall'>👥</abbr>** |
+| 📝 | ./safe/common/Enum.sol | 1 | **** | 8 | 8 | 4 | 3 | 1 | **** |
+| 📚 | ./safe/external/GnosisSafeMath.sol | 1 | **** | 54 | 54 | 24 | 22 | 6 | **** |
+| 📝 | ./SmartWalletChecker.sol | 1 | **** | 13 | 13 | 10 | 1 | 9 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./apps/VeUnoDaoYieldDistributor.sol | 1 | **** | 344 | 324 | 228 | 46 | 119 | **** |
+|  | ./misc/Helpers.sol | **** | **** | 23 | 23 | 16 | 5 | 10 | **<abbr title='Uses Assembly'>🖥</abbr>** |
+| 📝 | ./VotingEscrow.sol | 1 | **** | 855 | 813 | 514 | 221 | 211 | **<abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝 | ./Ownership.sol | 1 | **** | 67 | 63 | 35 | 17 | 21 | **** |
+| 📝 | ./automation/Resolver.sol | 1 | **** | 78 | 74 | 61 | 2 | 31 | **<abbr title='Uses Hash-Functions'>🧮</abbr>** |
+| 📝 | ./governance/GovernanceStrategy.sol | 1 | **** | 93 | 79 | 30 | 41 | 22 | **** |
+| 📝 | ./governance/Governance.sol | 1 | **** | 495 | 454 | 244 | 109 | 173 | **<abbr title='Payable Functions'>💰</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr>** |
+| 📝 | ./governance/ProposalValidator.sol | 1 | **** | 192 | 155 | 70 | 72 | 42 | **** |
+| 📝 | ./governance/Executor.sol | 1 | **** | 29 | 29 | 19 | 8 | 7 | **** |
+| 📝 | ./governance/ExecutorWithTimelock.sol | 1 | **** | 283 | 245 | 107 | 83 | 86 | **<abbr title='Payable Functions'>💰</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr>** |
+| 📝📚🔍 | **Totals** | **27** | **1** | **3673**  | **3340** | **1937** | **980** | **1477** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
