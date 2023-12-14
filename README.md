@@ -75,16 +75,16 @@ npx hardhat coverage
 | 📝 | ./SmartWalletChecker.sol | 1 | **** | 13 | 13 | 10 | 1 | 9 | **<abbr title='Uses Assembly'>�</abbr>** |
 | 📝 | ./apps/VeUnoDaoYieldDistributor.sol | 1 | **** | 344 | 324 | 228 | 46 | 119 | **** |
 |  | ./misc/Helpers.sol | **** | **** | 23 | 23 | 16 | 5 | 10 | **<abbr title='Uses Assembly'>🖥</abbr>** |
-| 📝 | ./VotingEscrow.sol | 1 | **** | 855 | 813 | 514 | 221 | 211 | **<abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
 | 📝 | ./Ownership.sol | 1 | **** | 67 | 63 | 35 | 17 | 21 | **** |
 | 📝 | ./automation/Resolver.sol | 1 | **** | 78 | 74 | 61 | 2 | 31 | **<abbr title='Uses Hash-Functions'>🧮</abbr>** |
-| 📝📚🔍 | **Totals** | **7** | **0** | **1441**  | **1371** | **909** | **298** | **444** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝📚🔍 | **Totals** | **6** | **0** | **586**  | **558** | **395** | **77** | **233** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
 
 
 ## Contracts not in scope for audit (commit: 2332f79670f67530f71dbdad2f54949893c1fb0d)
 
 | Type | File   | Logic Contracts | Interfaces | Lines | nLines | nSLOC | Comment Lines | Complex. Score | Capabilities |
 | ---- | ------ | --------------- | ---------- | ----- | ------ | ----- | ------------- | -------------- | ------------ | 
+| 📝 | ./VotingEscrow.sol | 1 | **** | 855 | 813 | 514 | 221 | 211 | **<abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
 | 📝 | ./safe/GnosisSafe.sol | 1 | **** | 422 | 360 | 201 | 135 | 189 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr>** |
 | 📝 | ./safe/base/ModuleManager.sol | 1 | **** | 133 | 123 | 65 | 47 | 100 | **<abbr title='Uses Assembly'>🖥</abbr>** |
 | 📝 | ./safe/base/Executor.sol | 1 | **** | 27 | 21 | 15 | 5 | 36 | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='DelegateCall'>👥</abbr>** |
@@ -105,7 +105,7 @@ npx hardhat coverage
 | 📝 | ./governance/ProposalValidator.sol | 1 | **** | 192 | 155 | 70 | 72 | 42 | **** |
 | 📝 | ./governance/Executor.sol | 1 | **** | 29 | 29 | 19 | 8 | 7 | **** |
 | 📝 | ./governance/ExecutorWithTimelock.sol | 1 | **** | 283 | 245 | 107 | 83 | 86 | **<abbr title='Payable Functions'>💰</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr>** |
-| 📝📚🔍 | **Totals** | **20** | **1** | **2233**  | **1969** | **1028** | **682** | **1033** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
+| 📝📚🔍 | **Totals** | **21** | **1** | **3088**  | **2782** | **1542** | **903** | **1244** | **<abbr title='Uses Assembly'>🖥</abbr><abbr title='Payable Functions'>💰</abbr><abbr title='Initiates ETH Value Transfer'>📤</abbr><abbr title='DelegateCall'>👥</abbr><abbr title='Uses Hash-Functions'>🧮</abbr><abbr title='Handles Signatures: ecrecover'>🔖</abbr><abbr title='Unchecked Blocks'>Σ</abbr>** |
 
 
 These are already audited smart contracts and we are keeping it out of scope of current audit.
@@ -117,3 +117,7 @@ Aave governance 2
 Gnosis Safe
 - Repository: https://github.com/safe-global/safe-contracts 
 - Audit report: https://github.com/safe-global/safe-contracts/blob/main/docs/Safe_Audit_Report_1_4_0.pdf 
+
+VotingEscrow
+- Repository: https://github.com/curvefi/curve-dao-contracts/blob/master/contracts/VotingEscrow.vy 
+- Audit report: https://github.com/mixbytes/audits_public/blob/master/Curve%20Finance/DAO%20Voting/Curve%20Finance%20DAO%20Voting%20Security%20Audit%20Report.pdf 
