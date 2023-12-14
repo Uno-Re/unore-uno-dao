@@ -9,10 +9,10 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {Owned} from "../access/Owned.sol";
+import {OwnedUpgradeable} from "../access/OwnedUpgradeable.sol";
 import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
-contract VeUnoDaoYieldDistributor is Owned, ReentrancyGuardUpgradeable {
+contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
 
     struct LockedBalance {
@@ -80,14 +80,13 @@ contract VeUnoDaoYieldDistributor is Owned, ReentrancyGuardUpgradeable {
         _;
     }
 
-    constructor(address _owner) Owned(_owner) {}
-
-    function initialize(IERC20 _emittedToken, IVotingEscrow _veUNO, address _timelock) external initializer {
+    function initialize(IERC20 _emittedToken, IVotingEscrow _veUNO, address _timelock, address _owner) external initializer {
         emittedToken = _emittedToken;
         veUNO = _veUNO;
         timelock = _timelock;
         lastUpdateTime = block.timestamp;
         rewardNotifiers[msg.sender] = true;
+        __Owned_init(_owner);
     }
 
     function sync() public {
