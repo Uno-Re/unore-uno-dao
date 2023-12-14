@@ -46,7 +46,7 @@ contract Governance is Ownable, IGovernance {
     uint256 votingDelay,
     address guardian,
     address[] memory executors
-  ) {
+  ) Ownable(msg.sender) {
     _setGovernanceStrategy(governanceStrategy);
     _setVotingDelay(votingDelay);
     _guardian = guardian;
