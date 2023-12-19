@@ -33,7 +33,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     uint256 public periodFinish;
     uint256 public lastUpdateTime;
     uint256 public yieldRate;
-    uint256 public yieldDuration = 604800; // 7 * 86400  (7 days)
+    uint256 public yieldDuration;
     // Yield tracking
     uint256 public yieldPerVeUNOStored;
     mapping(address => uint256) public userYieldPerTokenPaid;
@@ -86,6 +86,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         timelock = _timelock;
         lastUpdateTime = block.timestamp;
         rewardNotifiers[msg.sender] = true;
+        yieldDuration = 604800; // 7 * 86400  (7 days)
         __Owned_init(_owner);
     }
 
