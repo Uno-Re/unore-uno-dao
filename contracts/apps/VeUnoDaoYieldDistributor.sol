@@ -63,10 +63,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event RecoveredERC20(address token, uint256 amount);
 
     modifier onlyByOwnGov() {
-        require(
-            msg.sender == owner || msg.sender == timelock,
-            "VeUnoYD: !O/T"
-        );
+        _onlyByOwnGov();
         _;
     }
 
@@ -88,6 +85,14 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         rewardNotifiers[msg.sender] = true;
         yieldDuration = 604800; // 7 * 86400  (7 days)
         __Owned_init(_owner);
+    }
+
+    // Internal function to be used for modifier 'onlyByOwnGov'
+    function _onlyByOwnGov() internal view {
+        require(
+            msg.sender == owner || msg.sender == timelock,
+            "VeUnoYD: !O/T"
+        );
     }
 
     function sync() public {
