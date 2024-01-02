@@ -25,7 +25,7 @@ pragma solidity 0.8.23;
 // Interface for checking whether address belongs to a whitelisted
 // type of a smart wallet.
 // When new types are added - the whole contract is changed
-// The check() method is modifying to be able to use caching
+// The check() method is modified to be able to use caching
 // for individual wallet addresses
 import "./interfaces/dao/ISmartWalletChecker.sol";
 
@@ -193,7 +193,7 @@ contract VotingEscrow is ReentrancyGuard {
     /***
      *@notice Record global and per-user data to checkpoint
      *@param _addr User's wallet address. No user checkpoint if 0x0
-     *@param _old_locked Pevious locked amount / end lock time for the user
+     *@param _old_locked Previous locked amount / end lock time for the user
      *@param _new_locked New locked amount / end lock time for the user
      */
     function _checkpoint(
@@ -203,8 +203,8 @@ contract VotingEscrow is ReentrancyGuard {
     ) internal {
         Point memory _u_old;
         Point memory _u_new;
-        int256 _old_dslope = 0;
-        int256 _new_dslope = 0;
+        int256 _old_dslope;
+        int256 _new_dslope;
         uint256 _epoch = epoch;
 
         if (_addr != address(0)) {
@@ -229,7 +229,7 @@ contract VotingEscrow is ReentrancyGuard {
 
             // Read values of scheduled changes in the slope
             // _old_locked.end can be in the past and in the future
-            // _new_locked.end can ONLY by in the FUTURE unless everything expired than zeros
+            // _new_locked.end can ONLY be in the FUTURE unless everything expired than zeros
             _old_dslope = slope_changes[_old_locked.end];
             if (_new_locked.end != 0) {
                 if (_new_locked.end == _old_locked.end) {
@@ -253,7 +253,7 @@ contract VotingEscrow is ReentrancyGuard {
         // (approximately, for *At methods) and save them
         // as we cannot figure that out exactly from inside the contract
         Point memory _initial_last_point = _last_point;
-        uint256 _block_slope = 0; // dblock/dt
+        uint256 _block_slope; // dblock/dt
         if (block.timestamp > _last_point.ts) {
             _block_slope =
                 (MULTIPLIER * (block.number - _last_point.blk)) /
@@ -271,7 +271,7 @@ contract VotingEscrow is ReentrancyGuard {
             // Hopefully it won't happen that this won't get used in 5 years!
             // If it does, users will be able to withdraw but vote weight will be broken
             _t_i += WEEK;
-            int256 d_slope = 0;
+            int256 d_slope;
             if (_t_i > block.timestamp) {
                 _t_i = block.timestamp;
             } else {
@@ -569,10 +569,10 @@ contract VotingEscrow is ReentrancyGuard {
         returns (uint256)
     {
         // Binary search
-        uint256 _min = 0;
+        uint256 _min;
         uint256 _max = _max_epoch;
         unchecked {
-            for (uint256 i; i <= 128; i++) {
+            for (uint256 i; i <= 128;) {
                 // Will be always enough for 128-bit numbers
                 if (_min >= _max) {
                     break;
@@ -582,6 +582,10 @@ contract VotingEscrow is ReentrancyGuard {
                     _min = _mid;
                 } else {
                     _max = _mid - 1;
+                }
+
+                unchecked {
+                    ++i;
                 }
             }
         }
@@ -671,7 +675,7 @@ contract VotingEscrow is ReentrancyGuard {
         _st.min = 0;
         _st.max = user_point_epoch[_addr];
         unchecked {
-            for (uint256 i; i <= 128; i++) {
+            for (uint256 i; i <= 128;) {
                 // Will be always enough for 128-bit numbers
                 if (_st.min >= _st.max) {
                     break;
@@ -681,6 +685,10 @@ contract VotingEscrow is ReentrancyGuard {
                     _st.min = _mid;
                 } else {
                     _st.max = _mid - 1;
+                }
+
+                unchecked {
+                    ++i;
                 }
             }
         }
@@ -796,7 +804,7 @@ contract VotingEscrow is ReentrancyGuard {
         uint256 _target_epoch = find_block_epoch(_block, _epoch);
 
         Point memory _point = point_history[_target_epoch];
-        uint256 dt = 0;
+        uint256 dt;
         if (_target_epoch < _epoch) {
             Point memory _point_next = point_history[_target_epoch + 1];
             if (_point.blk != _point_next.blk) {
@@ -811,7 +819,7 @@ contract VotingEscrow is ReentrancyGuard {
                     (block.number - _point.blk);
             }
         }
-        // Now dt contains info on how far are we beyond point
+        // Now dt contains info on how far we are beyond point
 
         return supply_at(_point, _point.ts + dt);
     }
