@@ -495,7 +495,7 @@ contract VotingEscrow is ReentrancyGuard {
      */
     function increase_unlock_time(uint256 _unlock_time) external nonReentrant {
         assert_not_contract(msg.sender); //@shun: need to convert to solidity
-        LockedBalance memory _locked = locked[msg.sender];
+        LockedBalance memory _locked = locked[msg.sender]; 
         require(_unlock_time > _locked.end,'Unlock time must be greater than the current end time');
 
         require(_locked.end > block.timestamp, "Lock expired");
