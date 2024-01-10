@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+const { ethers, upgrades } = require("hardhat");
 const { BigNumber } = ethers;
 
 describe("VeUnoDaoYieldDistributor", function() {
@@ -37,11 +37,13 @@ describe("VeUnoDaoYieldDistributor", function() {
       this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address
     );
 
-    this.veUnoDaoYieldDistributor = await this.VeUnoDaoYieldDistributor.deploy(
+    this.veUnoDaoYieldDistributor = await upgrades.deployProxy(this.VeUnoDaoYieldDistributor, [
       this.token.address,
+      this.voting_escrow.address,
       this.creator.address,
-      this.voting_escrow.address
-    );
+      this.creator.address
+    ]);
+    await this.veUnoDaoYieldDistributor.deployed();
 
     //init
     for (i = 0; i < accounts.length; i++) {
@@ -53,7 +55,6 @@ describe("VeUnoDaoYieldDistributor", function() {
     await this.token.transfer(this.veUnoDaoYieldDistributor.address, this.rewardAmount);
     await this.veUnoDaoYieldDistributor.setYieldRate(BigNumber.from(1).mul(BigNumber.from(10).pow(17)), false); // 0.1 UNO for 1 second
     const timestamp = ~~(new Date().getTime() / 1000);
-    await this.veUnoDaoYieldDistributor.setPeriodFinish(timestamp + 8 * WEEK, false);
 
     //setup
     this.escrowedAmount = BigNumber.from(1000).mul(BigNumber.from(10).pow(18));
@@ -88,12 +89,12 @@ describe("VeUnoDaoYieldDistributor", function() {
     await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
     aliceUNOBalance = await this.token.balanceOf(this.alice.address);
     console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
-    // let userLocked = await this.voting_escrow.locked(this.alice.address);
-    // console.log('userLocked ==>', userLocked.amount.toString());
+    let userLocked = await this.voting_escrow.locked(this.alice.address);
+    console.log('userLocked ==>', userLocked.amount.toString());
 
-    // console.log("\n\n=== Second getting yield ===\n");
-    // await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
-    // aliceUNOBalance = await this.token.balanceOf(this.alice.address);
-    // console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
+    console.log("\n\n=== Second getting yield ===\n");
+    await this.veUnoDaoYieldDistributor.connect(this.alice).getYield();
+    aliceUNOBalance = await this.token.balanceOf(this.alice.address);
+    console.log('Alice UNO Balance ==>', aliceUNOBalance.toString());
   })
 })
