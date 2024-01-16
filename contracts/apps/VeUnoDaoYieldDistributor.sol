@@ -70,11 +70,6 @@ contract VeUnoDaoYieldDistributor is
         _;
     }
 
-    modifier notYieldCollectionPaused() {
-        require(!yieldCollectionPaused, "VeUnoYD: YCP");
-        _;
-    }
-
     modifier checkpointUser(address _account) {
         _checkpointUser(_account);
         _;
@@ -209,10 +204,10 @@ contract VeUnoDaoYieldDistributor is
     function getYield()
         external
         nonReentrant
-        notYieldCollectionPaused
         checkpointUser(msg.sender)
         returns (uint256 yield0)
     {
+        require(!yieldCollectionPaused, "VeUnoYD: YCP");
         require(!greylist[msg.sender], "VeUnoYD: GLU");
 
         yield0 = yields[msg.sender];
