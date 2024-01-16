@@ -221,13 +221,13 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
-    function notifyRewardAmount(address _user, uint256 _amount) external {
+    function notifyRewardAmount(uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "VeUnoYD: !Notifier");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the emission amount
-        emittedToken.safeTransferFrom(_user, address(this), _amount);
+        emittedToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         // Update some values beforehand
         sync();
