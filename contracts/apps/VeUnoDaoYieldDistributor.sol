@@ -307,6 +307,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         IERC20 _token,
         uint256 _amount
     ) external onlyByOwnGov {
+        require(_token != emittedToken, "You are rug-pulling your users!");
         // Only the owner address can receive the recovery withdrawal
         _token.safeTransfer(owner, _amount);
         emit RecoveredERC20(address(_token), _amount);
