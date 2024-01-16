@@ -238,7 +238,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         } else {
             uint256 remaining = periodFinish - block.timestamp;
             uint256 leftover = remaining * yieldRate;
-            yieldRate = (_amount + leftover) / yieldDuration;
+           yieldRate += _amount / (periodFinish - block.timestamp);
         }
 
         // Update duration-related info
