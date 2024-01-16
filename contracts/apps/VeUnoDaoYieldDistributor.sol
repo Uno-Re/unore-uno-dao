@@ -12,7 +12,10 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnedUpgradeable} from "../access/OwnedUpgradeable.sol";
 import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
-contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeable {
+contract VeUnoDaoYieldDistributor is
+    OwnedUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using SafeERC20 for IERC20;
 
     struct LockedBalance {
@@ -63,10 +66,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event RecoveredERC20(address token, uint256 amount);
 
     modifier onlyByOwnGov() {
-        require(
-            msg.sender == owner || msg.sender == timelock,
-            "VeUnoYD: !O/T"
-        );
+        require(msg.sender == owner || msg.sender == timelock, "VeUnoYD: !O/T");
         _;
     }
 
@@ -80,7 +80,12 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         _;
     }
 
-    function initialize(IERC20 _emittedToken, IVotingEscrow _veUNO, address _timelock, address _owner) external initializer {
+    function initialize(
+        IERC20 _emittedToken,
+        IVotingEscrow _veUNO,
+        address _timelock,
+        address _owner
+    ) external initializer {
         emittedToken = _emittedToken;
         veUNO = _veUNO;
         timelock = _timelock;
@@ -238,7 +243,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         } else {
             uint256 remaining = periodFinish - block.timestamp;
             uint256 leftover = remaining * yieldRate;
-           yieldRate += _amount / (periodFinish - block.timestamp);
+            yieldRate += _amount / (periodFinish - block.timestamp);
         }
 
         // Update duration-related info
