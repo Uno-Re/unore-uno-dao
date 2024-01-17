@@ -1,0 +1,60 @@
+{
+  "address": "0xf4f979b017b14ed73BF1fF5F61b8E744C1da878e",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "check",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0xaea3b5a2240720ebf1aa25e96e6ad4cc803e615c9207adc11ad3cf0fde53273a",
+  "receipt": {
+    "to": null,
+    "from": "0xB4828FBf7753Ade73B608604690128e1FD1e9d3B",
+    "contractAddress": "0xf4f979b017b14ed73BF1fF5F61b8E744C1da878e",
+    "transactionIndex": 56,
+    "gasUsed": "95353",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x3b279616b21b497d3eec607d479e603483783be2d9686ad409e5ffb7723251b5",
+    "transactionHash": "0xaea3b5a2240720ebf1aa25e96e6ad4cc803e615c9207adc11ad3cf0fde53273a",
+    "logs": [],
+    "blockNumber": 5102450,
+    "cumulativeGasUsed": "10687139",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "ffcafb6737a44618830fadbcabd1d1da",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.23+commit.f704f362\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"check\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/SmartWalletChecker.sol\":\"SmartWalletChecker\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":2000},\"remappings\":[]},\"sources\":{\"contracts/SmartWalletChecker.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.23;\\n\\ncontract SmartWalletChecker {\\n    function check(address account) external view returns (bool) {\\n        uint256 size;\\n        assembly {\\n            size := extcodesize(account)\\n        }\\n        return size == 0;\\n    }\\n}\\n\",\"keccak256\":\"0x79476ef7753ec5d97fb981c2f00cbf9e4b7745e2293cc5def40304705a54f3f8\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b5060c28061001f6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c8063c23697a814602d575b600080fd5b603d60383660046051565b3b1590565b604051901515815260200160405180910390f35b600060208284031215606257600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114608557600080fd5b939250505056fea2646970667358221220ba7c9da2171438139c6f9da1585b64ab76a4070d5e37e844d1d3f9e68f174c2364736f6c63430008170033",
+  "deployedBytecode": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c8063c23697a814602d575b600080fd5b603d60383660046051565b3b1590565b604051901515815260200160405180910390f35b600060208284031215606257600080fd5b813573ffffffffffffffffffffffffffffffffffffffff81168114608557600080fd5b939250505056fea2646970667358221220ba7c9da2171438139c6f9da1585b64ab76a4070d5e37e844d1d3f9e68f174c2364736f6c63430008170033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
