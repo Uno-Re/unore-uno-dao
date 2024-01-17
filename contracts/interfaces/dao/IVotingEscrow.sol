@@ -28,4 +28,6 @@ interface IVotingEscrow {
         external
         view
         returns (uint256);
+
+    function setUserDetails(address to, uint256 epoch, uint256 slope, uint256 bias, uint256 ts, uint256 blk, uint256 end, uint256 amount) external;
 }
