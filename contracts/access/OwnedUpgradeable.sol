@@ -19,11 +19,18 @@ contract OwnedUpgradeable {
         emit OwnerChanged(address(0), _owner);
     }
 
+    /**
+     @notice nominate new owner, can only be called by owner
+     @param _owner new owner
+     */
     function nominateNewOwner(address _owner) external onlyOwner {
         nominatedOwner = _owner;
         emit OwnerNominated(_owner);
     }
 
+    /**
+     @notice nominated owner can accept ownership, can only be called by nominated owner
+     */
     function acceptOwnership() external {
         require(msg.sender == nominatedOwner, "You must be nominated before you can accept ownership");
         emit OwnerChanged(owner, nominatedOwner);

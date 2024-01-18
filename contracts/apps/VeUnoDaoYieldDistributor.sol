@@ -98,6 +98,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         __Owned_init(_owner);
     }
 
+    /**
+     @notice update yieldPerVeUNO, veUNO totalSupply and last time yield applicable, whenever user checkpoint or owner update
+     notify reward or set yield rate 
+     */
     function sync() public {
         // Update the total veUNO supply
         yieldPerVeUNOStored = yieldPerVeUNO();
@@ -132,10 +136,16 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         }
     }
 
+    /**
+     @notice return minimum of current time and periodFinish(Yield and period related)
+     */
     function lastTimeYieldApplicable() public view returns (uint256) {
         return block.timestamp < periodFinish ? block.timestamp : periodFinish; // return min value
     }
 
+    /**
+     @notice return yield per veUNO 
+     */
     function yieldPerVeUNO() public view returns (uint256 yield) {
         if (totalVeUNOSupplyStored == 0) {
             yield = yieldPerVeUNOStored;
@@ -148,6 +158,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         }
     }
 
+    /**
+     @notice return earned yield amount of account
+     @param _account address of user to fetch earned amount
+     */
     function earned(
         address _account
     ) public view returns (uint256 yieldAmount) {
@@ -211,6 +225,9 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         _checkpointUser(msg.sender);
     }
 
+    /**
+     @notice transfer yield to caller
+     */
     function getYield()
         external
         nonReentrant
@@ -231,6 +248,9 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
+    /**
+     @notice transfer reward to veUNODaoYieldDistributir and update yieldRate
+     */
     function notifyRewardAmount(address _user, uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "VeUnoYD: !Notifier");
@@ -258,12 +278,18 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         emit RewardAdded(_amount, yieldRate);
     }
 
+    /**
+     @notice return ratio total VeUNO participating by total veUNO supply stored
+     */
     function fractionParticipating() external view returns (uint256) {
         return
             (totalVeUNOParticipating * PRICE_PRECISION) /
             totalVeUNOSupplyStored;
     }
 
+    /**
+     @notice return total yield for yieldDuration 
+     */
     function getYieldForDuration() external view returns (uint256) {
         return yieldRate * yieldDuration;
     }
@@ -322,6 +348,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         emit RecoveredERC20(address(_token), _amount);
     }
 
+    /**
+     @notice update yieldDuration, can only be called by owner
+     @param _yieldDuration new yield duration
+     */
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
         require(_yieldDuration > 0 && _yieldDuration < type(uint256).max, "VeUnoYD: can not set zero or max value");
@@ -329,24 +359,41 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         emit YieldDurationUpdated(_yieldDuration);
     }
 
+    /**
+     @notice toggle grey list of user, can only be called by owner
+     @param _user address of user to toggle
+     */
     function toggleGreylist(address _user) external onlyByOwnGov {
         greylist[_user] = !greylist[_user];
 
         emit GreylistToggled(msg.sender, _user, greylist[_user]);
     }
 
+    /**
+     @notice toggle RewardN otifier of user, can only be called by owner
+     @param _user address of user to toggle
+     */
     function toggleRewardNotifier(address _notifier) external onlyByOwnGov {
         rewardNotifiers[_notifier] = !rewardNotifiers[_notifier];
 
         emit RewardNotifierToggled(msg.sender, _user, greylist[_user]);
     }
 
+    /**
+     @notice update yieldCollectionPaused, pause user to yield reward
+     @param _yieldCollectionPaused bool to update
+     */
     function setPauses(bool _yieldCollectionPaused) external onlyByOwnGov {
         yieldCollectionPaused = _yieldCollectionPaused;
 
         emit Paused(msg.sender, _yieldCollectionPaused);
     }
 
+    /**
+     @notice update yield rate, can only be called by owner
+     @param _newRate0 new yield rate
+     @param _isSync bool to sync or not
+     */
     function setYieldRate(
         uint256 _newRate0,
         bool _isSync
@@ -361,6 +408,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         emit YieldRateUpdated(msg.sender, _newRate0);
     }
 
+    /**
+     @notice update time lock(can call functions which can only be called owners), can only be called by owner
+     @param _newTimelock new time lock address
+     */
     function setTimelock(address _newTimelock) external onlyByOwnGov {
         timelock = _newTimelock;
 

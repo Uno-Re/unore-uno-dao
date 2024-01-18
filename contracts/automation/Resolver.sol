@@ -29,12 +29,19 @@ contract Resolver is Owned {
         rewardTreasury = _rewardTreasury;
     }
 
+    /**
+     @notice update apy(used to calculate reward), can only be called by owners
+     @param _apy new apy
+     */
     function updateApy(uint256 _apy) external onlyOwner {
         require(_apy <= APY_BASE, "NotifyRewardProxy: invalid APY");
         apy = _apy;
         emit ApyUpdated(_apy);
     }
 
+    /**
+     @notice return reward amount to distribute to veUNO holders
+     */
     function getRewardAmount() public view returns (uint256) {
         uint256 veTotalSupply = veUno.totalSupply();
         uint256 duration = yieldDistributor.yieldDuration();
@@ -55,6 +62,9 @@ contract Resolver is Owned {
         return reward;
     }
 
+    /**
+     @notice return bool to check can execute notifyRewardAmount and exexPayload bytes which is function selector notifyRewardAmount
+     */
     function checker()
         external
         view
