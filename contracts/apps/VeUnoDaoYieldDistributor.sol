@@ -62,6 +62,14 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
 
+    event Synced(uint256 yieldPerVeUNOStored, uint256 totalVeUNOSupplyStored, uint256 lastUpdateTime);
+    event GreylistToggled(address indexed owner, address indexed user, bool toggle);
+    event RewardNotifierToggled(address indexed owner, address indexed user, bool toggle);
+    event Paused(address indexed owner, bool paused);
+    event YieldRateUpdated(address indexed owner, uint256 yieldRate);
+    event TimelockUpdated(address indexed owner, uint256 yieldRate);
+    
+
     modifier onlyByOwnGov() {
         require(
             msg.sender == owner || msg.sender == timelock,
@@ -95,6 +103,8 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         yieldPerVeUNOStored = yieldPerVeUNO();
         totalVeUNOSupplyStored = veUNO.totalSupply();
         lastUpdateTime = lastTimeYieldApplicable();
+
+        emit Synced(yieldPerVeUNOStored, totalVeUNOSupplyStored, lastUpdateTime);
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
@@ -321,14 +331,20 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
 
     function toggleGreylist(address _user) external onlyByOwnGov {
         greylist[_user] = !greylist[_user];
+
+        emit GreylistToggled(msg.sender, _user, greylist[_user]);
     }
 
     function toggleRewardNotifier(address _notifier) external onlyByOwnGov {
         rewardNotifiers[_notifier] = !rewardNotifiers[_notifier];
+
+        emit RewardNotifierToggled(msg.sender, _user, greylist[_user]);
     }
 
     function setPauses(bool _yieldCollectionPaused) external onlyByOwnGov {
         yieldCollectionPaused = _yieldCollectionPaused;
+
+        emit Paused(msg.sender, _yieldCollectionPaused);
     }
 
     function setYieldRate(
@@ -341,9 +357,13 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         if (_isSync) {
             sync();
         }
+
+        emit YieldRateUpdated(msg.sender, _newRate0);
     }
 
     function setTimelock(address _newTimelock) external onlyByOwnGov {
         timelock = _newTimelock;
+
+        emit TimelockUpdated(msg.sender, _newTimelock);
     }
 }
