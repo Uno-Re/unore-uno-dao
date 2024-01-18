@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity =0.8.23;
 
 import "../common/Enum.sol";
 import "../common/SelfAuthorized.sol";
@@ -27,7 +27,8 @@ interface Guard {
 contract GuardManager is SelfAuthorized {
     event ChangedGuard(address guard);
     // keccak256("guard_manager.guard.address")
-    bytes32 internal constant GUARD_STORAGE_SLOT = 0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8;
+    bytes32 internal constant GUARD_STORAGE_SLOT =
+        0x4a204f620c8c5ccdca3fd54d003badd85ba500436a431f0cbda4f558c93c34c8;
 
     /// @dev Set a guard that checks transactions before execution
     /// @param guard The address of the guard to be used or the 0 address to disable the guard
