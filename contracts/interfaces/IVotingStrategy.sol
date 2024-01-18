@@ -2,5 +2,8 @@
 pragma solidity =0.8.23;
 
 interface IVotingStrategy {
-  function getVotingPowerAt(address user, uint256 blockNumber) external view returns (uint256);
+    function getVotingPowerAt(
+        address user,
+        uint256 blockNumber
+    ) external view returns (uint256);
 }

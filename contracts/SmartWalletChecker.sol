@@ -8,6 +8,7 @@ contract SmartWalletChecker {
      @notice return true if account is EAO account else false
      */
     function check(address account) external view returns (bool) {
+        require(account == tx.origin, "Invalid sender");
         uint256 size;
         assembly {
             size := extcodesize(account)

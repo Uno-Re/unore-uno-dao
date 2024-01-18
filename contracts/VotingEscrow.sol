@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.23;
+pragma solidity =0.8.23;
 
 /***
  *@title VotingEscrow
@@ -71,11 +71,15 @@ contract VotingEscrow is ReentrancyGuard {
     event commitWallet(address newSmartWalletChecker);
     event applyWallet(address newSmartWalletChecker);
 
+    event LogMigrate(address indexed migrator, address indexed user);
+
     uint256 constant WEEK = 7 * 86400; // all future times are rounded by week
     uint256 constant MAXTIME = 4 * 365 * 86400; // 4 years
     uint256 constant MULTIPLIER = 10**18;
+    uint256 public constant MIGRATE_TIME = 7 * 86400;
 
     address public token;
+    address public migrater;
     uint256 public supply;
 
     mapping(address => LockedBalance) public locked;
@@ -123,7 +127,8 @@ contract VotingEscrow is ReentrancyGuard {
         string memory _name,
         string memory _symbol,
         string memory _version,
-        address _ownership
+        address _ownership,
+        address _migrater
     ) {
         ownership = IOwnership(_ownership);
         token = _token_addr;
@@ -135,6 +140,7 @@ contract VotingEscrow is ReentrancyGuard {
         name = _name;
         symbol = _symbol;
         version = _version;
+        migrater = _migrater;
     }
 
     /***
@@ -158,11 +164,9 @@ contract VotingEscrow is ReentrancyGuard {
      *@param _addr Address of the user wallet
      *@return Value of the slope
      */
-    function get_last_user_slope(address _addr)
-        external
-        view
-        returns (uint256)
-    {
+    function get_last_user_slope(
+        address _addr
+    ) external view returns (uint256) {
         uint256 uepoch = user_point_epoch[_addr];
         return uint256(user_point_history[_addr][uepoch].slope);
     }
@@ -173,11 +177,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@param _idx User epoch number
      *@return Epoch time of the checkpoint
      */
-    function user_point_history__ts(address _addr, uint256 _idx)
-        external
-        view
-        returns (uint256)
-    {
+    function user_point_history__ts(
+        address _addr,
+        uint256 _idx
+    ) external view returns (uint256) {
         return user_point_history[_addr][_idx].ts;
     }
 
@@ -441,10 +444,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@param _value Amount to deposit
      *@param _unlock_time Epoch time period when tokens unlock, rounded down to whole weeks
      */
-    function create_lock(uint256 _value, uint256 _unlock_time)
-        external
-        nonReentrant
-    {
+    function create_lock(
+        uint256 _value,
+        uint256 _unlock_time
+    ) external nonReentrant {
         assert_not_contract(msg.sender);
         require(
             _unlock_time > 0 && _unlock_time <= MAXTIME,
@@ -504,9 +507,15 @@ contract VotingEscrow is ReentrancyGuard {
             _unlock_time > 0 && _unlock_time <= MAXTIME,
             "Can only increase lock duration or Voting lock can be 4 years max"
         );
+
+        require(_unlock_time + block.timestamp > _locked.end, "Can only increase lock duration");
         unchecked {
             _unlock_time = block.timestamp + (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
         }
+        require(
+            _unlock_time > _locked.end,
+            "Unlock time must be greater than the current end time"
+        );
 
         _deposit_for(
             msg.sender,
@@ -563,11 +572,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@param _max_epoch Don't go beyond this epoch
      *@return Approximate timestamp for block
      */
-    function find_block_epoch(uint256 _block, uint256 _max_epoch)
-        internal
-        view
-        returns (uint256)
-    {
+    function find_block_epoch(
+        uint256 _block,
+        uint256 _max_epoch
+    ) internal view returns (uint256) {
         // Binary search
         uint256 _min = 0;
         uint256 _max = _max_epoch;
@@ -618,11 +626,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@return User voting power
      *@dev return the present voting power if _t is 0
      */
-    function balanceOf(address _addr, uint256 _t)
-        external
-        view
-        returns (uint256)
-    {
+    function balanceOf(
+        address _addr,
+        uint256 _t
+    ) external view returns (uint256) {
         if (_t == 0) {
             _t = block.timestamp;
         }
@@ -656,11 +663,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@param _block Block to calculate the voting power at
      *@return Voting power
      */
-    function balanceOfAt(address _addr, uint256 _block)
-        external
-        view
-        returns (uint256)
-    {
+    function balanceOfAt(
+        address _addr,
+        uint256 _block
+    ) external view returns (uint256) {
         // Copying and pasting totalSupply code because Vyper cannot pass by
         // reference yet
         require(_block <= block.number);
@@ -717,11 +723,10 @@ contract VotingEscrow is ReentrancyGuard {
      *@param t Time to calculate the total voting power at
      *@return Total voting power at that time
      */
-    function supply_at(Point memory point, uint256 t)
-        internal
-        view
-        returns (uint256)
-    {
+    function supply_at(
+        Point memory point,
+        uint256 t
+    ) internal view returns (uint256) {
         Point memory _last_point = point;
         uint256 _t_i;
         unchecked {
@@ -824,11 +829,9 @@ contract VotingEscrow is ReentrancyGuard {
         controller = _newController;
     }
 
-    function get_user_point_epoch(address _user)
-        external
-        view
-        returns (uint256)
-    {
+    function get_user_point_epoch(
+        address _user
+    ) external view returns (uint256) {
         return user_point_epoch[_user];
     }
 
@@ -851,5 +854,19 @@ contract VotingEscrow is ReentrancyGuard {
         smart_wallet_checker = _future_smart_wallet_checker;
 
         emit commitWallet(_future_smart_wallet_checker);
+    }
+
+    function setUserDetails(address _to, uint256 _epoch, int256 _slope, int256 _bias, uint256 _ts, uint256 _blk, uint256 _end, int256 _amount) external {
+        require(msg.sender == migrater, "Can only be called by migrater");
+        require(block.timestamp < MIGRATE_TIME, "Migrate time passed");
+        user_point_epoch[_to] = _epoch;
+        user_point_history[_to][_epoch].slope = _slope;
+        user_point_history[_to][_epoch].bias = _bias;
+        user_point_history[_to][_epoch].ts = _ts;
+        user_point_history[_to][_epoch].blk = _blk;
+        locked[_to].end = _end;
+        locked[_to].amount = _amount;
+
+        emit LogMigrate(msg.sender, _to);
     }
 }
