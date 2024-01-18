@@ -67,7 +67,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event RewardNotifierToggled(address indexed owner, address indexed user, bool toggle);
     event Paused(address indexed owner, bool paused);
     event YieldRateUpdated(address indexed owner, uint256 yieldRate);
-    event TimelockUpdated(address indexed owner, uint256 yieldRate);
+    event TimelockUpdated(address indexed owner, address indexed yieldRate);
     
 
     modifier onlyByOwnGov() {
@@ -371,12 +371,12 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
 
     /**
      @notice toggle RewardN otifier of user, can only be called by owner
-     @param _user address of user to toggle
+     @param _notifier address of user to toggle
      */
     function toggleRewardNotifier(address _notifier) external onlyByOwnGov {
         rewardNotifiers[_notifier] = !rewardNotifiers[_notifier];
 
-        emit RewardNotifierToggled(msg.sender, _user, greylist[_user]);
+        emit RewardNotifierToggled(msg.sender, _notifier, greylist[_notifier]);
     }
 
     /**
