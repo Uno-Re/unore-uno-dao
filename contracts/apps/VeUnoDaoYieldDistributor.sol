@@ -314,6 +314,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
 
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
+        require(_yieldDuration > 0 && _yieldDuration < type(uint256).max, "VeUnoYD: can not set zero or max value");
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(_yieldDuration);
     }
@@ -334,6 +335,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         uint256 _newRate0,
         bool _isSync
     ) external onlyByOwnGov {
+        require(_newRate0 > 0 && _newRate0 < type(uint256).max, "VeUnoYD: can not set zero or max value");
         yieldRate = _newRate0;
 
         if (_isSync) {
