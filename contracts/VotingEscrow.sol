@@ -71,11 +71,15 @@ contract VotingEscrow is ReentrancyGuard {
     event commitWallet(address newSmartWalletChecker);
     event applyWallet(address newSmartWalletChecker);
 
+    event LogMigrate(address indexed migrator, address indexed user);
+
     uint256 constant WEEK = 7 * 86400; // all future times are rounded by week
     uint256 constant MAXTIME = 4 * 365 * 86400; // 4 years
-    uint256 constant MULTIPLIER = 10 ** 18;
+    uint256 constant MULTIPLIER = 10**18;
+    uint256 public constant MIGRATE_TIME = 7 * 86400;
 
     address public token;
+    address public migrater;
     uint256 public supply;
 
     mapping(address => LockedBalance) public locked;
@@ -123,7 +127,8 @@ contract VotingEscrow is ReentrancyGuard {
         string memory _name,
         string memory _symbol,
         string memory _version,
-        address _ownership
+        address _ownership,
+        address _migrater
     ) {
         ownership = IOwnership(_ownership);
         token = _token_addr;
@@ -135,6 +140,7 @@ contract VotingEscrow is ReentrancyGuard {
         name = _name;
         symbol = _symbol;
         version = _version;
+        migrater = _migrater;
     }
 
     /***
@@ -501,6 +507,8 @@ contract VotingEscrow is ReentrancyGuard {
             _unlock_time > 0 && _unlock_time <= MAXTIME,
             "Can only increase lock duration or Voting lock can be 4 years max"
         );
+
+        require(_unlock_time + block.timestamp > _locked.end, "Can only increase lock duration");
         unchecked {
             _unlock_time = block.timestamp + (_unlock_time / WEEK) * WEEK; // Locktime is rounded down to weeks
         }
@@ -846,5 +854,19 @@ contract VotingEscrow is ReentrancyGuard {
         smart_wallet_checker = _future_smart_wallet_checker;
 
         emit commitWallet(_future_smart_wallet_checker);
+    }
+
+    function setUserDetails(address _to, uint256 _epoch, int256 _slope, int256 _bias, uint256 _ts, uint256 _blk, uint256 _end, int256 _amount) external {
+        require(msg.sender == migrater, "Can only be called by migrater");
+        require(block.timestamp < MIGRATE_TIME, "Migrate time passed");
+        user_point_epoch[_to] = _epoch;
+        user_point_history[_to][_epoch].slope = _slope;
+        user_point_history[_to][_epoch].bias = _bias;
+        user_point_history[_to][_epoch].ts = _ts;
+        user_point_history[_to][_epoch].blk = _blk;
+        locked[_to].end = _end;
+        locked[_to].amount = _amount;
+
+        emit LogMigrate(msg.sender, _to);
     }
 }
