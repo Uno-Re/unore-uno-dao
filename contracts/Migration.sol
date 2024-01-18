@@ -18,12 +18,12 @@ contract Migration is Ownable {
     }
 
     function migrate() external {
-        require(newVotingEscrow != address(0), "New Voting Escrow is not set");
+        require(address(newVotingEscrow) != address(0), "New Voting Escrow is not set");
         IVotingEscrow.LockedBalance memory lockedOfUser = oldVotingEscrow.locked(msg.sender);
         uint256 userPointEpoch = oldVotingEscrow.get_user_point_epoch(msg.sender);
         IVotingEscrow.Point memory userPointHistory = oldVotingEscrow.user_point_history(msg.sender, userPointEpoch);
 
-        IVotingEscrow(newVotingEscrow).setUserDetails(msg.sender, userPointEpoch, Point.slope, Point.bias, Point.ts, Point.blk, lockedOfUser.end, lockedOfUser.amount);
+        IVotingEscrow(newVotingEscrow).setUserDetails(msg.sender, userPointEpoch, userPointHistory.slope, userPointHistory.bias, userPointHistory.ts, userPointHistory.blk, lockedOfUser.end, lockedOfUser.amount);
 
         emit UserMigrated(address(this), msg.sender);
     }
@@ -31,6 +31,6 @@ contract Migration is Ownable {
     function setNewVotingEscrow(address _votinEscrow) external onlyOwner {
         newVotingEscrow = IVotingEscrow(_votinEscrow);
 
-        emit NewVotingEscrowUpdated(votinEscrow);
+        emit NewVotingEscrowUpdated(_votinEscrow);
     }
 }

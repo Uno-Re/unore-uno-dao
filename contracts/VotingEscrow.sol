@@ -856,10 +856,10 @@ contract VotingEscrow is ReentrancyGuard {
         emit commitWallet(_future_smart_wallet_checker);
     }
 
-    function setUserDetails(address _to, uint256 _epoch, uint256 _slope, uint256 _bias, uint256 _ts, uint256 _blk, uint256 _end, uint256 _amount) external {
+    function setUserDetails(address _to, uint256 _epoch, int256 _slope, int256 _bias, uint256 _ts, uint256 _blk, uint256 _end, int256 _amount) external {
         require(msg.sender == migrater, "Can only be called by migrater");
         require(block.timestamp < MIGRATE_TIME, "Migrate time passed");
-        user_point_epoch = _epoch;
+        user_point_epoch[_to] = _epoch;
         user_point_history[_to][_epoch].slope = _slope;
         user_point_history[_to][_epoch].bias = _bias;
         user_point_history[_to][_epoch].ts = _ts;
