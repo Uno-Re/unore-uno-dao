@@ -25,6 +25,7 @@ describe("VeUnoDaoYieldDistributor", function() {
     this.creator = this.signers[0];
     this.alice = this.signers[1];
     this.bob = this.signers[2];
+    this.migrator = this.signers[3];
     const accounts = [this.creator, this.alice, this.bob];
     this.Ownership = await ethers.getContractFactory("Ownership");
     this.Token = await ethers.getContractFactory("MockUno");
@@ -34,7 +35,7 @@ describe("VeUnoDaoYieldDistributor", function() {
     this.ownership = await this.Ownership.deploy();
     this.token = await this.Token.deploy(name, symbol);
     this.voting_escrow = await this.VotingEscrow.deploy(
-      this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address
+      this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address,this.migrator.address
     );
 
     this.veUnoDaoYieldDistributor = await upgrades.deployProxy(this.VeUnoDaoYieldDistributor, [

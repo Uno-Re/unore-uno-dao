@@ -35,7 +35,7 @@ describe("VotingEscrow", function () {
 
   beforeEach(async () => {
     //import
-    [creator, alice, bob, chad, dad, elephant, fei, god, hecta, iloveyou] =
+    [creator, alice, bob, chad, dad, elephant, fei, god, hecta, iloveyou, migrator] =
       await ethers.getSigners();
     accounts = [
       creator,
@@ -47,7 +47,7 @@ describe("VotingEscrow", function () {
       fei,
       god,
       hecta,
-      iloveyou,
+      iloveyou
     ];
     const Ownership = await ethers.getContractFactory("Ownership");
     const Token = await ethers.getContractFactory("MockUno");
@@ -60,7 +60,8 @@ describe("VotingEscrow", function () {
       "Voting-escrowed UnoRe",
       "veUnoRe",
       "veUnoRe",
-      ownership.address
+      ownership.address,
+      migrator.address
     );
 
     //init
@@ -91,6 +92,7 @@ describe("VotingEscrow", function () {
         unlock_time: BigNumber.from("0"),
       });
     }
+    
   });
 
   //--------------------------------------------- functions -----------------------------------------------------------//
@@ -253,13 +255,15 @@ describe("VotingEscrow", function () {
     // Withdraw tokens from the voting escrow.
 
     //st_account
-    let rdm = Math.floor(Math.random() * 10); //0~9 integer
+    let rdm = Math.floor(Math.random() * 10);
+ //0~9 integer
     st_account_n = rdm;
     st_account = accounts[st_account_n];
 
     let timestamp = BigNumber.from(
       (await ethers.provider.getBlock("latest")).timestamp
     );
+  
 
     if (voting_balances[st_account_n]["unlock_time"] && voting_balances[st_account_n]["unlock_time"].gt(timestamp)) {
       console.log("--reverted");
