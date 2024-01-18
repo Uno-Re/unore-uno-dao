@@ -2111,8 +2111,8 @@
         }
       ]
     },
-    "VotingEscrowOld": {
-      "address": "0xd9EBf8A168e0d74DeD204875195fbFac542F847C",
+    "VotingEscrowV1": {
+      "address": "0x623c39700969C87B70580F7D3c8E85E5493561fC",
       "abi": [
         {
           "inputs": [

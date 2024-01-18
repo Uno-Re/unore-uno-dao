@@ -35,7 +35,7 @@ import "./interfaces/pool/IOwnership.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract VotingEscrowOld is ReentrancyGuard {
+contract VotingEscrowV1 is ReentrancyGuard {
     struct Point {
         int256 bias;
         int256 slope; // - dweight / dt

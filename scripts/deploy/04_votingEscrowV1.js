@@ -19,7 +19,7 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     this.ownership = await deployments.get('Ownership');
     const ownershipAddress = this.ownership.address;
   
-    await deploy('VotingEscrowOld', {
+    await deploy('VotingEscrowV1', {
       from: deployer,
       log: true,
       args: [
@@ -33,6 +33,6 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     });
   };
   
-  module.exports.tags = ['VotingEscrowOld', 'UnoDao'];
+  module.exports.tags = ['VotingEscrowV1', 'UnoDao'];
   module.exports.dependencies = ['MockUno', 'MockUno'];
   
