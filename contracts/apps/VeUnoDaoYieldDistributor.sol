@@ -12,7 +12,10 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnedUpgradeable} from "../access/OwnedUpgradeable.sol";
 import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
-contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeable {
+contract VeUnoDaoYieldDistributor is
+    OwnedUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using SafeERC20 for IERC20;
 
     struct LockedBalance {
@@ -63,15 +66,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event RecoveredERC20(address token, uint256 amount);
 
     modifier onlyByOwnGov() {
-        require(
-            msg.sender == owner || msg.sender == timelock,
-            "VeUnoYD: !O/T"
-        );
-        _;
-    }
-
-    modifier notYieldCollectionPaused() {
-        require(!yieldCollectionPaused, "VeUnoYD: YCP");
+        require(msg.sender == owner || msg.sender == timelock, "VeUnoYD: !O/T");
         _;
     }
 
@@ -80,7 +75,12 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         _;
     }
 
-    function initialize(IERC20 _emittedToken, IVotingEscrow _veUNO, address _timelock, address _owner) external initializer {
+    function initialize(
+        IERC20 _emittedToken,
+        IVotingEscrow _veUNO,
+        address _timelock,
+        address _owner
+    ) external initializer {
         emittedToken = _emittedToken;
         veUNO = _veUNO;
         timelock = _timelock;
@@ -204,10 +204,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     function getYield()
         external
         nonReentrant
-        notYieldCollectionPaused
         checkpointUser(msg.sender)
         returns (uint256 yield0)
     {
+        require(!yieldCollectionPaused, "VeUnoYD: YCP");
         require(!greylist[msg.sender], "VeUnoYD: GLU");
 
         yield0 = yields[msg.sender];
@@ -221,13 +221,13 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
-    function notifyRewardAmount(address _user, uint256 _amount) external {
+    function notifyRewardAmount(uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "VeUnoYD: !Notifier");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the emission amount
-        emittedToken.safeTransferFrom(_user, address(this), _amount);
+        emittedToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         // Update some values beforehand
         sync();
@@ -238,7 +238,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         } else {
             uint256 remaining = periodFinish - block.timestamp;
             uint256 leftover = remaining * yieldRate;
-            yieldRate = (_amount + leftover) / yieldDuration;
+            yieldRate += _amount / (periodFinish - block.timestamp);
         }
 
         // Update duration-related info
@@ -307,6 +307,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         IERC20 _token,
         uint256 _amount
     ) external onlyByOwnGov {
+        require(_token != emittedToken, "You are rug-pulling your users!");
         // Only the owner address can receive the recovery withdrawal
         _token.safeTransfer(owner, _amount);
         emit RecoveredERC20(address(_token), _amount);
