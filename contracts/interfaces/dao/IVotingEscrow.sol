@@ -7,6 +7,13 @@ interface IVotingEscrow {
         uint256 end;
     }
 
+    struct Point {
+        int256 bias;
+        int256 slope; // - dweight / dt
+        uint256 ts; //timestamp
+        uint256 blk; // block
+    }
+
     function get_last_user_slope(address _addr) external view returns (uint256);
 
     function locked__end(address _addr) external view returns (uint256);
@@ -27,6 +34,8 @@ interface IVotingEscrow {
         external
         view
         returns (uint256);
+    
+    function user_point_history(address _addr, uint256 _idx) external view returns (Point memory);
 
-    function setUserDetails(address to, uint256 epoch, uint256 slope, uint256 bias, uint256 ts, uint256 blk, uint256 end, uint256 amount) external;
+    function setUserDetails(address to, uint256 epoch, int256 slope, int256 bias, uint256 ts, uint256 blk, uint256 end, int256 amount) external;
 }
