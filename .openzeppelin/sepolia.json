@@ -1,0 +1,249 @@
+{
+  "manifestVersion": "3.2",
+  "admin": {
+    "address": "0xc32E414a2d5266547A33A62bd821480450C50056",
+    "txHash": "0x0b4b2112e6d370da2909ea43398267ef0529f15ae8ae67618bc5c1f990e33eca"
+  },
+  "proxies": [
+    {
+      "address": "0x6FaA901ce0A5B64710D37b22923C0c75CE575cb8",
+      "txHash": "0x631d5d1ab0308e3ab882f831a1fdf434c39ebfdab97f870c8a680f8a6f8e3e20",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "df7bdca21cd8da91fa15291b6b38f4ca7b0415aac7955e00cdf98fdbc0698dbe": {
+      "address": "0xdBC57028cc7725cd865E47A87adB804B7A68d7cf",
+      "txHash": "0x426b3219d9fd72d966ecffc7c2f80ace9eeac47e03f1a69ecd0173704870ef03",
+      "layout": {
+        "storage": [
+          {
+            "label": "owner",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_address",
+            "contract": "OwnedUpgradeable",
+            "src": "contracts/access/OwnedUpgradeable.sol:5"
+          },
+          {
+            "label": "nominatedOwner",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_address",
+            "contract": "OwnedUpgradeable",
+            "src": "contracts/access/OwnedUpgradeable.sol:6"
+          },
+          {
+            "label": "lastRewardClaimTime",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:27"
+          },
+          {
+            "label": "veUNO",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IVotingEscrow)8799",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:29"
+          },
+          {
+            "label": "emittedToken",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IERC20)1260",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:31"
+          },
+          {
+            "label": "periodFinish",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:33"
+          },
+          {
+            "label": "lastUpdateTime",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:34"
+          },
+          {
+            "label": "yieldRate",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:35"
+          },
+          {
+            "label": "yieldDuration",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:36"
+          },
+          {
+            "label": "yieldPerVeUNOStored",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:38"
+          },
+          {
+            "label": "userYieldPerTokenPaid",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:39"
+          },
+          {
+            "label": "yields",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:40"
+          },
+          {
+            "label": "totalVeUNOParticipating",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:42"
+          },
+          {
+            "label": "totalVeUNOSupplyStored",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_uint256",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:43"
+          },
+          {
+            "label": "userVeUNOCheckpointed",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:44"
+          },
+          {
+            "label": "userVeUNOEndpointCheckpointed",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:45"
+          },
+          {
+            "label": "userIsInitialized",
+            "offset": 0,
+            "slot": "16",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:46"
+          },
+          {
+            "label": "greylist",
+            "offset": 0,
+            "slot": "17",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:48"
+          },
+          {
+            "label": "yieldCollectionPaused",
+            "offset": 0,
+            "slot": "18",
+            "type": "t_bool",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:50"
+          },
+          {
+            "label": "timelock",
+            "offset": 1,
+            "slot": "18",
+            "type": "t_address",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:52"
+          },
+          {
+            "label": "rewardNotifiers",
+            "offset": 0,
+            "slot": "19",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "VeUnoDaoYieldDistributor",
+            "src": "contracts/apps/VeUnoDaoYieldDistributor.sol:54"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IERC20)1260": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IVotingEscrow)8799": {
+            "label": "contract IVotingEscrow",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:40"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
