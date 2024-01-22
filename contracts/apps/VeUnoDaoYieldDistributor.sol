@@ -25,7 +25,7 @@ contract VeUnoDaoYieldDistributor is
 
     // Constant for price precision
     uint256 public constant PRICE_PRECISION = 1e6;
-    uint256 public constant SECONDS_IN_THREE_MONTHS = 7776000;
+    uint256 public constant SECONDS_IN_MONTHS = 2592000;
 
     // Stores last reward time of staker
     mapping(address => uint256) public lastRewardClaimTime;
@@ -355,7 +355,7 @@ contract VeUnoDaoYieldDistributor is
      */
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
-        require(_yieldDuration > 0 && _yieldDuration <= SECONDS_IN_THREE_MONTHS, "VeUnoYD: can not set zero or more than thee month");
+        require(_yieldDuration > 0 && _yieldDuration <= (SECONDS_IN_MONTHS*3), "VeUnoYD: can not set zero or more than thee month");
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(_yieldDuration);
     }
