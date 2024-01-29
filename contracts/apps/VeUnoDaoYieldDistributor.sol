@@ -265,6 +265,7 @@ contract VeUnoDaoYieldDistributor is
 
         // Update the new yieldRate
         if (block.timestamp >= periodFinish) {
+            periodFinish = block.timestamp + yieldDuration;
             yieldRate = _amount / yieldDuration;
         } else {
             uint256 remaining = periodFinish - block.timestamp;
@@ -273,7 +274,6 @@ contract VeUnoDaoYieldDistributor is
 
         // Update duration-related info
         lastUpdateTime = block.timestamp;
-        periodFinish = block.timestamp + yieldDuration;
 
         emit RewardAdded(_amount, yieldRate);
     }
