@@ -5,6 +5,8 @@ contract Owned {
     address public owner;
     address public nominatedOwner;
 
+    uint256[30] __gap;
+    
     event OwnerNominated(address newOwner);
     event OwnerChanged(address oldOwner, address newOwner);
 
