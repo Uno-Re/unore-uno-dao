@@ -25,7 +25,7 @@ contract VeUnoDaoYieldDistributor is
 
     // Constant for price precision
     uint256 public constant PRICE_PRECISION = 1e6;
-    uint256 public constant SECONDS_IN_HOURS = 2592000;
+    uint256 public constant SECONDS_IN_HOURS = 3600;
 
     // Stores last reward time of staker
     mapping(address => uint256) public lastRewardClaimTime;
