@@ -4,7 +4,7 @@ pragma solidity =0.8.23;
 contract Owned {
     address public owner;
     address public nominatedOwner;
-    
+
     event OwnerNominated(address newOwner);
     event OwnerChanged(address oldOwner, address newOwner);
 
