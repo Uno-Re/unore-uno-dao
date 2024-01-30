@@ -268,7 +268,8 @@ contract VeUnoDaoYieldDistributor is
             yieldRate = _amount / yieldDuration;
         } else {
             uint256 remaining = periodFinish - block.timestamp;
-            yieldRate += _amount / remaining;
+            uint256 leftover = remaining * yieldRate;
+            yieldRate = (_amount + leftover) / yieldDuration;
         }
 
         // Update duration-related info
