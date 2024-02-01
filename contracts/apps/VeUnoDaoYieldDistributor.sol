@@ -12,7 +12,10 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnedUpgradeable} from "../access/OwnedUpgradeable.sol";
 import {IVotingEscrow} from "../interfaces/dao/IVotingEscrow.sol";
 
-contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeable {
+contract VeUnoDaoYieldDistributor is
+    OwnedUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using SafeERC20 for IERC20;
 
     struct LockedBalance {
@@ -22,6 +25,7 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
 
     // Constant for price precision
     uint256 public constant PRICE_PRECISION = 1e6;
+    uint256 public constant SECONDS_IN_MONTHS = 2592000;
 
     // Stores last reward time of staker
     mapping(address => uint256) public lastRewardClaimTime;
@@ -62,16 +66,16 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
 
-    modifier onlyByOwnGov() {
-        require(
-            msg.sender == owner || msg.sender == timelock,
-            "VeUnoYD: !O/T"
-        );
-        _;
-    }
+    event Synced(uint256 yieldPerVeUNOStored, uint256 totalVeUNOSupplyStored, uint256 lastUpdateTime);
+    event GreylistToggled(address indexed owner, address indexed user, bool toggle);
+    event RewardNotifierToggled(address indexed owner, address indexed user, bool toggle);
+    event Paused(address indexed owner, bool paused);
+    event YieldRateUpdated(address indexed owner, uint256 yieldRate);
+    event TimelockUpdated(address indexed owner, address indexed yieldRate);
+    
 
-    modifier notYieldCollectionPaused() {
-        require(!yieldCollectionPaused, "VeUnoYD: YCP");
+    modifier onlyByOwnGov() {
+        require(msg.sender == owner || msg.sender == timelock, "VeUnoYD: !O/T");
         _;
     }
 
@@ -80,7 +84,12 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         _;
     }
 
-    function initialize(IERC20 _emittedToken, IVotingEscrow _veUNO, address _timelock, address _owner) external initializer {
+    function initialize(
+        IERC20 _emittedToken,
+        IVotingEscrow _veUNO,
+        address _timelock,
+        address _owner
+    ) external initializer {
         emittedToken = _emittedToken;
         veUNO = _veUNO;
         timelock = _timelock;
@@ -90,11 +99,17 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         __Owned_init(_owner);
     }
 
+    /**
+     @notice update yieldPerVeUNO, veUNO totalSupply and last time yield applicable, whenever user checkpoint or owner update
+     notify reward or set yield rate 
+     */
     function sync() public {
         // Update the total veUNO supply
         yieldPerVeUNOStored = yieldPerVeUNO();
         totalVeUNOSupplyStored = veUNO.totalSupply();
         lastUpdateTime = lastTimeYieldApplicable();
+
+        emit Synced(yieldPerVeUNOStored, totalVeUNOSupplyStored, lastUpdateTime);
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
@@ -122,10 +137,16 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         }
     }
 
+    /**
+     @notice return minimum of current time and periodFinish(Yield and period related)
+     */
     function lastTimeYieldApplicable() public view returns (uint256) {
         return block.timestamp < periodFinish ? block.timestamp : periodFinish; // return min value
     }
 
+    /**
+     @notice return yield per veUNO 
+     */
     function yieldPerVeUNO() public view returns (uint256 yield) {
         if (totalVeUNOSupplyStored == 0) {
             yield = yieldPerVeUNOStored;
@@ -138,6 +159,10 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         }
     }
 
+    /**
+     @notice return earned yield amount of account
+     @param _account address of user to fetch earned amount
+     */
     function earned(
         address _account
     ) public view returns (uint256 yieldAmount) {
@@ -201,13 +226,16 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         _checkpointUser(msg.sender);
     }
 
+    /**
+     @notice transfer yield to caller
+     */
     function getYield()
         external
         nonReentrant
-        notYieldCollectionPaused
         checkpointUser(msg.sender)
         returns (uint256 yield0)
     {
+        require(!yieldCollectionPaused, "VeUnoYD: YCP");
         require(!greylist[msg.sender], "VeUnoYD: GLU");
 
         yield0 = yields[msg.sender];
@@ -221,13 +249,16 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         lastRewardClaimTime[msg.sender] = block.timestamp;
     }
 
-    function notifyRewardAmount(address _user, uint256 _amount) external {
+    /**
+     @notice transfer reward to veUNODaoYieldDistributir and update yieldRate
+     */
+    function notifyRewardAmount(uint256 _amount) external {
         // Only whitelisted addresses can notify rewards
         require(rewardNotifiers[msg.sender], "VeUnoYD: !Notifier");
 
         // Handle the transfer of emission tokens via `transferFrom` to reduce the number
         // of transactions required and ensure correctness of the emission amount
-        emittedToken.safeTransferFrom(_user, address(this), _amount);
+        emittedToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         // Update some values beforehand
         sync();
@@ -248,12 +279,18 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         emit RewardAdded(_amount, yieldRate);
     }
 
+    /**
+     @notice return ratio total VeUNO participating by total veUNO supply stored
+     */
     function fractionParticipating() external view returns (uint256) {
         return
             (totalVeUNOParticipating * PRICE_PRECISION) /
             totalVeUNOSupplyStored;
     }
 
+    /**
+     @notice return total yield for yieldDuration 
+     */
     function getYieldForDuration() external view returns (uint256) {
         return yieldRate * yieldDuration;
     }
@@ -307,41 +344,79 @@ contract VeUnoDaoYieldDistributor is OwnedUpgradeable, ReentrancyGuardUpgradeabl
         IERC20 _token,
         uint256 _amount
     ) external onlyByOwnGov {
+        require(_token != emittedToken, "You are rug-pulling your users!");
         // Only the owner address can receive the recovery withdrawal
         _token.safeTransfer(owner, _amount);
         emit RecoveredERC20(address(_token), _amount);
     }
 
+    /**
+     @notice update yieldDuration, can only be called by owner
+     @param _yieldDuration new yield duration
+     */
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
+        require(_yieldDuration > 0 && _yieldDuration <= (SECONDS_IN_MONTHS*3), "VeUnoYD: can not set zero or more than thee month");
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(_yieldDuration);
     }
 
+    /**
+     @notice toggle grey list of user, can only be called by owner
+     @param _user address of user to toggle
+     */
     function toggleGreylist(address _user) external onlyByOwnGov {
         greylist[_user] = !greylist[_user];
+
+        emit GreylistToggled(msg.sender, _user, greylist[_user]);
     }
 
+    /**
+     @notice toggle RewardN otifier of user, can only be called by owner
+     @param _notifier address of user to toggle
+     */
     function toggleRewardNotifier(address _notifier) external onlyByOwnGov {
         rewardNotifiers[_notifier] = !rewardNotifiers[_notifier];
+
+        emit RewardNotifierToggled(msg.sender, _notifier, greylist[_notifier]);
     }
 
+    /**
+     @notice update yieldCollectionPaused, pause user to yield reward
+     @param _yieldCollectionPaused bool to update
+     */
     function setPauses(bool _yieldCollectionPaused) external onlyByOwnGov {
         yieldCollectionPaused = _yieldCollectionPaused;
+
+        emit Paused(msg.sender, _yieldCollectionPaused);
     }
 
+    /**
+     @notice update yield rate, can only be called by owner
+     @param _newRate0 new yield rate
+     @param _isSync bool to sync or not
+     */
     function setYieldRate(
         uint256 _newRate0,
         bool _isSync
     ) external onlyByOwnGov {
+        require(_newRate0 > 0 && _newRate0 < type(uint256).max, "VeUnoYD: can not set zero or max value");
         yieldRate = _newRate0;
 
         if (_isSync) {
             sync();
         }
+
+        emit YieldRateUpdated(msg.sender, _newRate0);
     }
 
+    /**
+     @notice update time lock(can call functions which can only be called owners), can only be called by owner
+     @param _newTimelock new time lock address
+     */
     function setTimelock(address _newTimelock) external onlyByOwnGov {
         timelock = _newTimelock;
+
+        emit TimelockUpdated(msg.sender, _newTimelock);
     }
 }
