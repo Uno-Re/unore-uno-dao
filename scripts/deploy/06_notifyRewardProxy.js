@@ -4,10 +4,10 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
   
-    const _yieldDistributor = '0x50A7C5A1a143E7Ada93b6F69027Fe329869A75f1'
-    const UNO = '0x474021845C4643113458ea4414bdb7fB74A01A77' // this.mockUno.address;
-    const _veUno = '0xBdBC1af93D95909625b18775b14c7D21E00775Aa';
-    const _admin = '0x440365317Cc5CA4D26288f708B07ef79cea80474'; // votingEscrow.address;
+    const _yieldDistributor = '0x9Dd1437C718C58a8D5c78156ea7267793BCe72e7'
+    const UNO = '0x092183fC3337977351F20bddBC1B667e0E2CC365' // this.mockUno.address;
+    const _veUno = '0xe1D2Ca6232b04749B527238686b2fA080B02eF83';
+    const _admin = '0xB4828FBf7753Ade73B608604690128e1FD1e9d3B'; // votingEscrow.address;
   
     await deploy('NotifyRewardProxy', {
       from: deployer,

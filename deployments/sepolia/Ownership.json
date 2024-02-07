@@ -1,0 +1,162 @@
+{
+  "address": "0x25F90a117832f175D302ad291DeDa0327462cCc9",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "AcceptNewOwnership",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "futureOwner",
+          "type": "address"
+        }
+      ],
+      "name": "CommitNewOwnership",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "acceptTransferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "commitTransferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "futureOwner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x3408d48df8e057e5b825f4771fca1bc37636dd31207d69f4524003b18ddf8c0a",
+  "receipt": {
+    "to": null,
+    "from": "0xB4828FBf7753Ade73B608604690128e1FD1e9d3B",
+    "contractAddress": "0x25F90a117832f175D302ad291DeDa0327462cCc9",
+    "transactionIndex": 87,
+    "gasUsed": "247790",
+    "logsBloom": "0x00000000000000008000000000000000000000000000000000010000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000020200000000000000000000000000080000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x1e220445526751d5f264407980963856f9937893fb122c9f3fd87db3a6410fc0",
+    "transactionHash": "0x3408d48df8e057e5b825f4771fca1bc37636dd31207d69f4524003b18ddf8c0a",
+    "logs": [
+      {
+        "transactionIndex": 87,
+        "blockNumber": 5102448,
+        "transactionHash": "0x3408d48df8e057e5b825f4771fca1bc37636dd31207d69f4524003b18ddf8c0a",
+        "address": "0x25F90a117832f175D302ad291DeDa0327462cCc9",
+        "topics": [
+          "0x405c0e6e5e78abd3919565924321c67e70f1b0f989c4ac8cd327269a73c42d6e",
+          "0x000000000000000000000000b4828fbf7753ade73b608604690128e1fd1e9d3b"
+        ],
+        "data": "0x",
+        "logIndex": 187,
+        "blockHash": "0x1e220445526751d5f264407980963856f9937893fb122c9f3fd87db3a6410fc0"
+      }
+    ],
+    "blockNumber": 5102448,
+    "cumulativeGasUsed": "9198375",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [],
+  "numDeployments": 1,
+  "solcInputHash": "ffcafb6737a44618830fadbcabd1d1da",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.23+commit.f704f362\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"AcceptNewOwnership\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"futureOwner\",\"type\":\"address\"}],\"name\":\"CommitNewOwnership\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"acceptTransferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"commitTransferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"futureOwner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{\"constructor\":{\"details\":\"Initializes the contract setting the deployer as the initial owner.\"},\"owner()\":{\"details\":\"Returns the address of the current owner.\"}},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/Ownership.sol\":\"Ownership\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":2000},\"remappings\":[]},\"sources\":{\"contracts/Ownership.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity =0.8.23;\\n\\nimport \\\"./interfaces/pool/IOwnership.sol\\\";\\n\\ncontract Ownership is IOwnership {\\n    address private _owner;\\n    address private _futureOwner;\\n\\n    event CommitNewOwnership(address indexed futureOwner);\\n    event AcceptNewOwnership(address indexed owner);\\n\\n    /**\\n     * @dev Initializes the contract setting the deployer as the initial owner.\\n     */\\n    constructor() {\\n        _owner = msg.sender;\\n        emit AcceptNewOwnership(msg.sender);\\n    }\\n\\n    /**\\n     * @dev Returns the address of the current owner.\\n     */\\n    function owner() external view override returns (address) {\\n        return _owner;\\n    }\\n\\n    function futureOwner() external view override returns (address) {\\n        return _futureOwner;\\n    }\\n\\n    /**\\n     * @dev Throws if called by any account other than the owner.\\n     */\\n    modifier onlyOwner() {\\n        require(_owner == msg.sender, \\\"Caller is not allowed to operate\\\");\\n        _;\\n    }\\n\\n    modifier onlyFutureOwner() {\\n        require(_futureOwner == msg.sender, \\\"Caller is not allowed to operate\\\");\\n        _;\\n    }\\n\\n    /***\\n     *@notice Transfer ownership of GaugeController to `newOwner`\\n     *@param newOwner Address to have ownership transferred to\\n     */\\n    function commitTransferOwnership(address newOwner)\\n        external\\n        override\\n        onlyOwner\\n    {\\n        _futureOwner = newOwner;\\n        emit CommitNewOwnership(newOwner);\\n    }\\n\\n    /***\\n     *@notice Accept a transfer of ownership\\n     */\\n    function acceptTransferOwnership() external override onlyFutureOwner {\\n        _owner = msg.sender;\\n        _futureOwner = address(0);\\n        emit AcceptNewOwnership(msg.sender);\\n    }\\n}\\n\",\"keccak256\":\"0x051537ced6c36e9290e6c9e7e27a56a635326f5b458a8526fdfb2514c2c4dac0\",\"license\":\"MIT\"},\"contracts/interfaces/pool/IOwnership.sol\":{\"content\":\"pragma solidity =0.8.23;\\n\\n//SPDX-License-Identifier: MIT\\n\\ninterface IOwnership {\\n    function owner() external view returns (address);\\n\\n    function futureOwner() external view returns (address);\\n\\n    function commitTransferOwnership(address newOwner) external;\\n\\n    function acceptTransferOwnership() external;\\n}\\n\",\"keccak256\":\"0x2fdad7aec4381208267768aedec6d5079f8916d2440011fb6e154b1a11cc0719\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50600080546001600160a01b03191633908117825560405190917f405c0e6e5e78abd3919565924321c67e70f1b0f989c4ac8cd327269a73c42d6e91a26103198061005c6000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c80637b371107146100515780638da5cb5b1461005b578063b9e9d1aa1461009e578063e1cebf0b146100bc575b600080fd5b6100596100cf565b005b60005473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b60015473ffffffffffffffffffffffffffffffffffffffff16610075565b6100596100ca3660046102a6565b6101b6565b60015473ffffffffffffffffffffffffffffffffffffffff163314610155576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f43616c6c6572206973206e6f7420616c6c6f77656420746f206f70657261746560448201526064015b60405180910390fd5b60008054337fffffffffffffffffffffffff0000000000000000000000000000000000000000918216811783556001805490921690915560405190917f405c0e6e5e78abd3919565924321c67e70f1b0f989c4ac8cd327269a73c42d6e91a2565b60005473ffffffffffffffffffffffffffffffffffffffff163314610237576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f43616c6c6572206973206e6f7420616c6c6f77656420746f206f706572617465604482015260640161014c565b600180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040517f3abe9db6779f8a27a45cfa602f3f6da1b676d51b7b9b9f8e88da494f78dfda5d90600090a250565b6000602082840312156102b857600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146102dc57600080fd5b939250505056fea264697066735822122065b2e5f0421ad3540ee00b94a198d4e7224c95a6a66a487d8f9ea31d9681bc8664736f6c63430008170033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c80637b371107146100515780638da5cb5b1461005b578063b9e9d1aa1461009e578063e1cebf0b146100bc575b600080fd5b6100596100cf565b005b60005473ffffffffffffffffffffffffffffffffffffffff165b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b60015473ffffffffffffffffffffffffffffffffffffffff16610075565b6100596100ca3660046102a6565b6101b6565b60015473ffffffffffffffffffffffffffffffffffffffff163314610155576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f43616c6c6572206973206e6f7420616c6c6f77656420746f206f70657261746560448201526064015b60405180910390fd5b60008054337fffffffffffffffffffffffff0000000000000000000000000000000000000000918216811783556001805490921690915560405190917f405c0e6e5e78abd3919565924321c67e70f1b0f989c4ac8cd327269a73c42d6e91a2565b60005473ffffffffffffffffffffffffffffffffffffffff163314610237576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820181905260248201527f43616c6c6572206973206e6f7420616c6c6f77656420746f206f706572617465604482015260640161014c565b600180547fffffffffffffffffffffffff00000000000000000000000000000000000000001673ffffffffffffffffffffffffffffffffffffffff83169081179091556040517f3abe9db6779f8a27a45cfa602f3f6da1b676d51b7b9b9f8e88da494f78dfda5d90600090a250565b6000602082840312156102b857600080fd5b813573ffffffffffffffffffffffffffffffffffffffff811681146102dc57600080fd5b939250505056fea264697066735822122065b2e5f0421ad3540ee00b94a198d4e7224c95a6a66a487d8f9ea31d9681bc8664736f6c63430008170033",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "details": "Initializes the contract setting the deployer as the initial owner."
+      },
+      "owner()": {
+        "details": "Returns the address of the current owner."
+      }
+    },
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 1971,
+        "contract": "contracts/Ownership.sol:Ownership",
+        "label": "_owner",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 1973,
+        "contract": "contracts/Ownership.sol:Ownership",
+        "label": "_futureOwner",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
