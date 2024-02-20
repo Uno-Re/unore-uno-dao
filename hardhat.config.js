@@ -57,13 +57,13 @@ module.exports = {
       gasPrice: "auto",
       accounts,
     },
-    // mainnet: {
-    //   url: "https://eth-mainnet.g.alchemy.com/v2/wqW5o0YSPkc421ISSwz8NqdG3fvdFVx6",
-    //   accounts: [`${process.env.MAINNET_PRIVATE_KEY}`],
-    //   chainId: 1,
-    //   live: false,
-    //   saveDeployments: true,
-    // },
+    mainnet: {
+      url: `${process.env.ETHEREUM_RPC}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      chainId: 1,
+      live: false,
+      saveDeployments: true,
+    },
     sepolia: {
       url: process.env.SEPOLIA_URL,
       accounts: [process.env.PRIVATE_KEY],
