@@ -233,7 +233,7 @@ describe("VotingEscrow", function () {
         "Can only increase lock duration or Voting lock can be 4 years max"
       );
     } 
-    else if (unlock_time.gt(MAX_TIME)) {
+    else if (unlock_time.gte(MAX_TIME)) {
       console.log("--revert: 3");
       await expect(
         voting_escrow.connect(st_account).increase_unlock_time(unlock_time)
