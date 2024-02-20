@@ -92,7 +92,7 @@ describe("VotingEscrow", function () {
         unlock_time: BigNumber.from("0"),
       });
     }
-    
+
   });
 
   //--------------------------------------------- functions -----------------------------------------------------------//
@@ -214,7 +214,7 @@ describe("VotingEscrow", function () {
     );
     st_lock_duration = rdm_value(255); //number of weeks
     let unlock_time = st_lock_duration.mul(WEEK).div(WEEK).mul(WEEK);
-
+    console.log(Number(timestamp + unlock_time), 'jhihi');
     if (voting_balances[st_account_n]["unlock_time"] && voting_balances[st_account_n]["unlock_time"].lte(timestamp)) {
       console.log("--revert: 1");
       await expect(
@@ -232,12 +232,20 @@ describe("VotingEscrow", function () {
       ).to.revertedWith(
         "Can only increase lock duration or Voting lock can be 4 years max"
       );
-    } else if (unlock_time.gt(MAX_TIME)) {
-      console.log("--revert: 4");
+    } 
+    else if (unlock_time.gt(MAX_TIME)) {
+      console.log("--revert: 3");
       await expect(
         voting_escrow.connect(st_account).increase_unlock_time(unlock_time)
       ).to.revertedWith(
         "Can only increase lock duration or Voting lock can be 4 years max"
+      );
+    } else if (Number(timestamp + unlock_time) < Number(voting_balances[st_account_n]["unlock_time"])) {
+      console.log("--revert: 4");
+      await expect(
+        voting_escrow.connect(st_account).increase_unlock_time(unlock_time)
+      ).to.revertedWith(
+        "Can only increase lock duration"
       );
     } else {
       console.log("--success, account:", st_account_n);
@@ -256,14 +264,14 @@ describe("VotingEscrow", function () {
 
     //st_account
     let rdm = Math.floor(Math.random() * 10);
- //0~9 integer
+    //0~9 integer
     st_account_n = rdm;
     st_account = accounts[st_account_n];
 
     let timestamp = BigNumber.from(
       (await ethers.provider.getBlock("latest")).timestamp
     );
-  
+
 
     if (voting_balances[st_account_n]["unlock_time"] && voting_balances[st_account_n]["unlock_time"].gt(timestamp)) {
       console.log("--reverted");
