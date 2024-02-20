@@ -4,16 +4,12 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    // address _token_addr,
-    //     string memory _name,
-    //     string memory _symbol,
-    //     string memory _version,
-    //     address _ownership
+    if (!process.env.OWNER_MULTISIG) return;
+    if (!process.env.UNO) return;
   
-    this.mockUno = await deployments.get('MockUno');
-    const mockUnoAddress = this.mockUno.address;
-    const _name = 'UnoDao Voting';
-    const _symbol = 'UnoDaoVE';
+    const unoToken = `${process.env.UNO}`;
+    const _name = 'Vote-Escrowed UNO';
+    const _symbol = 'veUNO';
     const _version = '1';
 
     this.ownership = await deployments.get('Ownership');
@@ -23,11 +19,12 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
       from: deployer,
       log: true,
       args: [
-        mockUnoAddress,
+        unoToken,
         _name,
         _symbol,
         _version,
-        ownershipAddress
+        ownershipAddress,
+        `${process.env.OWNER_MULTISIG}`
       ],
       deterministicDeployment: false
     });
