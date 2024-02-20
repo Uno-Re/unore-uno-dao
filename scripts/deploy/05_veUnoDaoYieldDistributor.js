@@ -4,22 +4,29 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
   
-    this.mockUno = await deployments.get('MockUno');
-    const mockUnoAddress = '0x3a554dc1EAc143FC4640b0294A342B4F9089FDE6' // this.mockUno.address;
+    const mockUno = await deployments.get('MockUno');
+    const mockUnoAddress = mockUno.address;
     const timeLockAddress = '0x7e47419EFE3E49f3E616965bFa96f089b2b0e574';
-    // const votingEscrow = await deployments.get("VotingEscrow");
-    const votingEscrowAddress = '0xE55A92fa510e2d277E4cF947189D0523683D63EC'; // votingEscrow.address;
+    const votingEscrow = await deployments.get("VotingEscrow");
+    const votingEscrowAddress = votingEscrow.address;
+    const owner = "0xB4828FBf7753Ade73B608604690128e1FD1e9d3B";
   
-    await deploy('VeUnoDaoYieldDistributor', {
+    const veUnoDao = await deploy("VeUnoDaoYieldDistributor", {
       from: deployer,
+      contract: "VeUnoDaoYieldDistributor",
       log: true,
-      args: [
-        mockUnoAddress,
-        timeLockAddress,
-        votingEscrowAddress
-      ],
-      deterministicDeployment: false
-    });
+      proxy: {
+        execute: {
+          init: {
+            methodName: "initialize",
+            args: [mockUnoAddress, votingEscrowAddress, timeLockAddress, owner],
+          },
+        },
+        proxyContract: "OpenZeppelinTransparentProxy",
+      },
+    })
+  
+    console.log(`deploy at ${veUnoDao.address}`)
   };
   
   module.exports.tags = ['VeUnoDaoYieldDistributor', 'UnoDao'];
