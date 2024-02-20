@@ -214,7 +214,7 @@ describe("VotingEscrow", function () {
     );
     st_lock_duration = rdm_value(255); //number of weeks
     let unlock_time = st_lock_duration.mul(WEEK).div(WEEK).mul(WEEK);
-    console.log(Number(timestamp + unlock_time), 'jhihi');
+
     if (voting_balances[st_account_n]["unlock_time"] && voting_balances[st_account_n]["unlock_time"].lte(timestamp)) {
       console.log("--revert: 1");
       await expect(
