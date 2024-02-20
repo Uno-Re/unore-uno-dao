@@ -31,5 +31,4 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
   };
   
   module.exports.tags = ['VotingEscrow', 'UnoDao'];
-  module.exports.dependencies = ['MockUno', 'MockUno'];
   

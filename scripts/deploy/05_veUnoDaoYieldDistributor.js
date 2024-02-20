@@ -33,5 +33,5 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
   };
   
   module.exports.tags = ['VeUnoDaoYieldDistributor', 'UnoDao'];
-  module.exports.dependencies = ['MockUno', 'MockUno', 'VotingEscrow'];
+  module.exports.dependencies = ['VotingEscrow'];
   
