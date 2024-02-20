@@ -151,7 +151,7 @@ describe("VotingEscrow", function () {
       receipt = await tx.wait();
       voting_balances[st_account_n] = {
         value: st_value,
-        unlock_time: receipt.events[2]["args"]["locktime"],
+        unlock_time: receipt.events[1]["args"]["locktime"],
       };
     }
   }
