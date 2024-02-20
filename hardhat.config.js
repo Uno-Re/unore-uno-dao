@@ -56,6 +56,10 @@ module.exports = {
     hardhat: {
       gasPrice: "auto",
       accounts,
+      forking: {
+        url: `${process.env.ETHEREUM_RPC}`,
+        enabled: true,
+      },
     },
     mainnet: {
       url: `${process.env.ETHEREUM_RPC}`,
