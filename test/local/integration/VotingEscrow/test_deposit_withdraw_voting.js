@@ -53,7 +53,7 @@ describe("VotingEscrow", function () {
     const Token = await ethers.getContractFactory("MockUno");
     const VotingEscrow = await ethers.getContractFactory("VotingEscrow");
 
-    ownership = await Ownership.deploy();
+    ownership = await Ownership.deploy(creator.address);
     token = await Token.deploy(name, symbol);
     voting_escrow = await VotingEscrow.deploy(
       token.address,
@@ -214,7 +214,7 @@ describe("VotingEscrow", function () {
     );
     st_lock_duration = rdm_value(255); //number of weeks
     let unlock_time = st_lock_duration.mul(WEEK).div(WEEK).mul(WEEK);
-
+    
     if (voting_balances[st_account_n]["unlock_time"] && voting_balances[st_account_n]["unlock_time"].lte(timestamp)) {
       console.log("--revert: 1");
       await expect(
@@ -240,14 +240,15 @@ describe("VotingEscrow", function () {
       ).to.revertedWith(
         "Can only increase lock duration or Voting lock can be 4 years max"
       );
-    } else if (Number(timestamp + unlock_time) < Number(voting_balances[st_account_n]["unlock_time"])) {
-      console.log("--revert: 4");
+    } 
+    else if (((unlock_time).add(timestamp)).lt(voting_balances[st_account_n]["unlock_time"])) {
+      console.log("--revert: 5");
       await expect(
         voting_escrow.connect(st_account).increase_unlock_time(unlock_time)
       ).to.revertedWith(
         "Can only increase lock duration"
       );
-    } else {
+    }else {
       console.log("--success, account:", st_account_n);
       tx = await voting_escrow
         .connect(st_account)
