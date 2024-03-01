@@ -4,10 +4,15 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
+  if (!process.env.OWNER_MULTISIG) {
+    console.log("No multisig");
+    return;
+  }
+
   await deploy('Ownership', {
     from: deployer,
     log: true,
-    args: [],
+    args: [`${process.env.OWNER_MULTISIG}`],
     deterministicDeployment: false
   });
 };

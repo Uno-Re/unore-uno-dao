@@ -3,13 +3,16 @@
 module.exports = async function ({ ethers, getNamedAccounts, deployments, getChainId }) {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
+
+    if (!process.env.OWNER_MULTISIG) return;
+    if (!process.env.UNO) return;
   
-    const mockUno = await deployments.get('MockUno');
-    const mockUnoAddress = mockUno.address;
-    const timeLockAddress = '0x7e47419EFE3E49f3E616965bFa96f089b2b0e574';
+    const unoToken = `${process.env.UNO}`;
+    const timeLockAddress = `${process.env.OWNER_MULTISIG}`;
+    const owner = `${process.env.OWNER_MULTISIG}`;
+    
     const votingEscrow = await deployments.get("VotingEscrow");
     const votingEscrowAddress = votingEscrow.address;
-    const owner = "0xB4828FBf7753Ade73B608604690128e1FD1e9d3B";
   
     const veUnoDao = await deploy("VeUnoDaoYieldDistributor", {
       from: deployer,
@@ -19,7 +22,7 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
         execute: {
           init: {
             methodName: "initialize",
-            args: [mockUnoAddress, votingEscrowAddress, timeLockAddress, owner],
+            args: [unoToken, votingEscrowAddress, timeLockAddress, owner],
           },
         },
         proxyContract: "OpenZeppelinTransparentProxy",
@@ -30,5 +33,5 @@ module.exports = async function ({ ethers, getNamedAccounts, deployments, getCha
   };
   
   module.exports.tags = ['VeUnoDaoYieldDistributor', 'UnoDao'];
-  module.exports.dependencies = ['MockUno', 'MockUno', 'VotingEscrow'];
+  module.exports.dependencies = ['VotingEscrow'];
   
