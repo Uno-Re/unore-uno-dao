@@ -32,7 +32,7 @@ describe("VeUnoDaoYieldDistributor", function() {
     this.VotingEscrow = await ethers.getContractFactory("VotingEscrow");
     this.VeUnoDaoYieldDistributor = await ethers.getContractFactory("VeUnoDaoYieldDistributor");
 
-    this.ownership = await this.Ownership.deploy();
+    this.ownership = await this.Ownership.deploy(this.creator.address);
     this.token = await this.Token.deploy(name, symbol);
     this.voting_escrow = await this.VotingEscrow.deploy(
       this.token.address, "Voting-escrowed UnoRe", "veUnoRe", "1", this.ownership.address,this.migrator.address
