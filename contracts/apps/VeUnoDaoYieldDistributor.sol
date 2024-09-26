@@ -66,13 +66,24 @@ contract VeUnoDaoYieldDistributor is
     event YieldDurationUpdated(uint256 newDuration);
     event RecoveredERC20(address token, uint256 amount);
 
-    event Synced(uint256 yieldPerVeUNOStored, uint256 totalVeUNOSupplyStored, uint256 lastUpdateTime);
-    event GreylistToggled(address indexed owner, address indexed user, bool toggle);
-    event RewardNotifierToggled(address indexed owner, address indexed user, bool toggle);
+    event Synced(
+        uint256 yieldPerVeUNOStored,
+        uint256 totalVeUNOSupplyStored,
+        uint256 lastUpdateTime
+    );
+    event GreylistToggled(
+        address indexed owner,
+        address indexed user,
+        bool toggle
+    );
+    event RewardNotifierToggled(
+        address indexed owner,
+        address indexed user,
+        bool toggle
+    );
     event Paused(address indexed owner, bool paused);
     event YieldRateUpdated(address indexed owner, uint256 yieldRate);
     event TimelockUpdated(address indexed owner, address indexed yieldRate);
-    
 
     modifier onlyByOwnGov() {
         require(msg.sender == owner || msg.sender == timelock, "VeUnoYD: !O/T");
@@ -109,7 +120,11 @@ contract VeUnoDaoYieldDistributor is
         totalVeUNOSupplyStored = veUNO.totalSupply();
         lastUpdateTime = lastTimeYieldApplicable();
 
-        emit Synced(yieldPerVeUNOStored, totalVeUNOSupplyStored, lastUpdateTime);
+        emit Synced(
+            yieldPerVeUNOStored,
+            totalVeUNOSupplyStored,
+            lastUpdateTime
+        );
     }
 
     // Only positions with locked veUNO can accrue yield. Otherwise, expired-locked veUNO
@@ -356,7 +371,10 @@ contract VeUnoDaoYieldDistributor is
      */
     function setYieldDuration(uint256 _yieldDuration) external onlyByOwnGov {
         require(block.timestamp > periodFinish, "VeUnoYD: !PYPC");
-        require(_yieldDuration > 0 && _yieldDuration <= (SECONDS_IN_MONTHS*3), "VeUnoYD: can not set zero or more than thee month");
+        require(
+            _yieldDuration > 0 && _yieldDuration <= (SECONDS_IN_MONTHS * 3),
+            "VeUnoYD: can not set zero or more than three month"
+        );
         yieldDuration = _yieldDuration;
         emit YieldDurationUpdated(_yieldDuration);
     }
@@ -400,7 +418,10 @@ contract VeUnoDaoYieldDistributor is
         uint256 _newRate0,
         bool _isSync
     ) external onlyByOwnGov {
-        require(_newRate0 > 0 && _newRate0 < type(uint256).max, "VeUnoYD: can not set zero or max value");
+        require(
+            _newRate0 > 0 && _newRate0 < type(uint256).max,
+            "VeUnoYD: can not set zero or max value"
+        );
         yieldRate = _newRate0;
 
         if (_isSync) {
