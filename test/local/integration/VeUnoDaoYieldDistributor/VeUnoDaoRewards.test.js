@@ -111,7 +111,11 @@ describe("VeUnoDaoYieldDistributor", function () {
 
       await hre.network.provider.send("hardhat_mine", ["0x100"]);
 
-      expect(earned).to.be.above(0);
+      const earnedAfter = await this.VeUnoDaoYieldDistributor.earned(
+        this.clientAddress
+      );
+
+      expect(earnedAfter).to.be.above(0);
     });
   });
 });
