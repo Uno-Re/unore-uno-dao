@@ -91,17 +91,17 @@ describe("VeUnoDaoYieldDistributor", function () {
     it("Should notify new rewards and check client address rewards", async function () {
       await this.MockUno.connect(this.UnoMillionaire).transfer(
         this.notifierAddress.address,
-        getBigNumber("50000")
+        getBigNumber("50000", 18)
       );
 
       await this.MockUno.connect(this.notifierAddress).approve(
         this.VeUnoDaoYieldDistributor.address,
-        getBigNumber("50000")
+        getBigNumber("50000", 18)
       );
 
       await this.VeUnoDaoYieldDistributor.connect(
         this.notifierAddress
-      ).notifyRewardAmount(getBigNumber("50000"));
+      ).notifyRewardAmount(getBigNumber("50000", 18));
 
       const earned = await this.VeUnoDaoYieldDistributor.earned(
         this.clientAddress
