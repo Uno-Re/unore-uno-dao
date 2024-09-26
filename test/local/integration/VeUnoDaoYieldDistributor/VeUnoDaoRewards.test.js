@@ -109,12 +109,13 @@ describe("VeUnoDaoYieldDistributor", function () {
 
       expect(earned).to.be.eq(0);
 
-      await hre.network.provider.send("hardhat_mine", ["0x100"]);
+      await hre.network.provider.send("hardhat_mine", ["0x1"]);
 
       const earnedAfter = await this.VeUnoDaoYieldDistributor.earned(
         this.clientAddress
       );
 
+      console.log(earnedAfter);
       expect(earnedAfter).to.be.above(0);
     });
   });
