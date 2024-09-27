@@ -69,6 +69,7 @@ describe("VeUnoDaoYieldDistributor", function () {
     ]);
 
     this.clientAddress = "0xa75e5e7f3d094b592c4e4522d2a7df0248e4dd26";
+    this.clientAddress1 = "0x360302170e6ca28dc6adc698b8d36cd76f260bfd";
   });
 
   describe("VeUnoDaoYieldDistributor rewards test", function () {
@@ -88,7 +89,7 @@ describe("VeUnoDaoYieldDistributor", function () {
       expect(yieldDuration).to.be.eq(three_months_in_seconds);
     });
 
-    it("Should notify new rewards and check client address rewards", async function () {
+    it("Should notify new rewards and check client address rewards after 1 block", async function () {
       await this.MockUno.connect(this.UnoMillionaire).transfer(
         this.notifierAddress.address,
         getBigNumber("50000", 18)
@@ -117,6 +118,34 @@ describe("VeUnoDaoYieldDistributor", function () {
 
       console.log(earnedAfter);
       expect(earnedAfter).to.be.above(0);
+    });
+    it("Should notify new rewards and check second client address rewards after 10 blocks", async function () {
+      await this.MockUno.connect(this.UnoMillionaire).transfer(
+        this.notifierAddress.address,
+        getBigNumber("50000", 18)
+      );
+
+      await this.MockUno.connect(this.notifierAddress).approve(
+        this.VeUnoDaoYieldDistributor.address,
+        getBigNumber("50000", 18)
+      );
+
+      await this.VeUnoDaoYieldDistributor.connect(
+        this.notifierAddress
+      ).notifyRewardAmount(getBigNumber("50000", 18));
+
+      const earned = await this.VeUnoDaoYieldDistributor.earned(
+        this.clientAddress1
+      );
+
+      await hre.network.provider.send("hardhat_mine", ["0x10"]);
+
+      const earnedAfter = await this.VeUnoDaoYieldDistributor.earned(
+        this.clientAddress1
+      );
+
+      console.log(earnedAfter);
+      expect(earnedAfter).to.be.above(earned);
     });
   });
 });
