@@ -57,12 +57,12 @@ module.exports = {
       gasPrice: "auto",
       accounts,
       forking: {
-        url: `${process.env.ETHEREUM_RPC}`,
+        url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
         enabled: true,
       },
     },
     mainnet: {
-      url: `${process.env.ETHEREUM_RPC}`,
+      url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       chainId: 1,
       live: false,
@@ -73,7 +73,7 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
       chainId: 11155111,
       live: true,
-      gas: 'auto',
+      gas: "auto",
       saveDeployments: true,
     },
   },
