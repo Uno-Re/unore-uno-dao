@@ -59,6 +59,7 @@ module.exports = {
       forking: {
         url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
         enabled: true,
+        blockNumber: 20364058 // July 22nd, last time yield was updated
       },
     },
     mainnet: {

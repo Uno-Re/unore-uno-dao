@@ -73,51 +73,48 @@ describe("VeUnoDaoYieldDistributor", function () {
   });
 
   describe("VeUnoDaoYieldDistributor rewards test", function () {
-    const three_months_in_seconds = 2629800;
+    const three_months_in_seconds = 7776000;
 
     it("Should set new yield duration", async function () {
-      await (
         await this.VeUnoDaoYieldDistributor.connect(
           this.multisig
-        ).setYieldDuration(three_months_in_seconds)
-      ).wait(); // 3 months in seconds
-
-      const block = await ethers.provider.getBlock("latest");
-      const blockNow = block.timestamp;
+        ).setYieldDuration(three_months_in_seconds); // 3 months in seconds
 
       const yieldDuration = await this.VeUnoDaoYieldDistributor.yieldDuration();
       expect(yieldDuration).to.be.eq(three_months_in_seconds);
     });
 
     it("Should notify new rewards and check client address rewards after 1 block", async function () {
+      await this.VeUnoDaoYieldDistributor.connect(
+        this.multisig
+      ).setYieldDuration(three_months_in_seconds);
+
+      var earned = await this.VeUnoDaoYieldDistributor.earned(
+        this.clientAddress
+      );
+      console.log(earned);
+
       await this.MockUno.connect(this.UnoMillionaire).transfer(
         this.notifierAddress.address,
-        getBigNumber("50000", 18)
+        getBigNumber("275485", 18)
       );
 
       await this.MockUno.connect(this.notifierAddress).approve(
         this.VeUnoDaoYieldDistributor.address,
-        getBigNumber("50000", 18)
+        getBigNumber("275485", 18)
       );
 
       await this.VeUnoDaoYieldDistributor.connect(
         this.notifierAddress
-      ).notifyRewardAmount(getBigNumber("50000", 18));
+      ).notifyRewardAmount(getBigNumber("275485", 18));
 
-      const earned = await this.VeUnoDaoYieldDistributor.earned(
-        this.clientAddress
-      );
-
-      expect(earned).to.be.eq(0);
-
-      await hre.network.provider.send("hardhat_mine", ["0x1"]);
+      await hre.network.provider.send("hardhat_mine", ["0x69078"]);
 
       const earnedAfter = await this.VeUnoDaoYieldDistributor.earned(
         this.clientAddress
       );
-
       console.log(earnedAfter);
-      expect(earnedAfter).to.be.above(0);
+      expect(earnedAfter).to.be.above(earned);
     });
     it("Should notify new rewards and check second client address rewards after 10 blocks", async function () {
       await this.MockUno.connect(this.UnoMillionaire).transfer(
@@ -129,21 +126,20 @@ describe("VeUnoDaoYieldDistributor", function () {
         this.VeUnoDaoYieldDistributor.address,
         getBigNumber("50000", 18)
       );
+      
+            const earned = await this.VeUnoDaoYieldDistributor.earned(
+              this.clientAddress1
+            );
 
       await this.VeUnoDaoYieldDistributor.connect(
         this.notifierAddress
       ).notifyRewardAmount(getBigNumber("50000", 18));
-
-      const earned = await this.VeUnoDaoYieldDistributor.earned(
-        this.clientAddress1
-      );
 
       await hre.network.provider.send("hardhat_mine", ["0x10"]);
 
       const earnedAfter = await this.VeUnoDaoYieldDistributor.earned(
         this.clientAddress1
       );
-
       console.log(earnedAfter);
       expect(earnedAfter).to.be.above(earned);
     });
